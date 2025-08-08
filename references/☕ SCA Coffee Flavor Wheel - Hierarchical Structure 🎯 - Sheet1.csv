@@ -1,0 +1,29 @@
+Level 1 (Main Category),Level 2 (Subcategory),Level 3 (Specific Flavors)
+FRUITY,BERRY,"Blackberry, Raspberry, Blueberry, Strawberry"
+FRUITY,DRIED FRUIT,"Raisin, Prune"
+FRUITY,OTHER FRUIT,"Coconut, Cherry, Pomegranate, Pineapple, Grape, Apple, Peach, Pear"
+FRUITY,CITRUS FRUIT,"Grapefruit, Orange, Lemon, Lime"
+SOUR/FERMENTED,SOUR,"Sour Aromatics, Acetic Acid, Butyric Acid, Isovaleric Acid, Citric Acid, Malic Acid"
+SOUR/FERMENTED,ALCOHOL/FERMENTED,"Winey, Whiskey, Fermented, Overripe"
+GREEN/VEGETATIVE,OLIVE OIL,
+GREEN/VEGETATIVE,RAW,
+GREEN/VEGETATIVE,GREEN/VEGETATIVE,"Under-ripe, Peapod, Fresh, Dark Green, Vegetative, Hay-like, Herb-like"
+GREEN/VEGETATIVE,BEANY,
+OTHER,PAPERY/MUSTY,"Stale, Cardboard, Papery, Woody, Moldy/Damp, Musty/Dusty, Musty/Earthy, Animalic, Meaty/Brothy, Phenolic"
+OTHER,CHEMICAL,"Bitter, Salty, Medicinal, Petroleum, Skunky, Rubber"
+ROASTED,PIPE TOBACCO,
+ROASTED,TOBACCO,
+ROASTED,BURNT,"Acrid, Ashy, Smoky, Brown-Roast"
+ROASTED,CEREAL,"Grain, Malt"
+SPICES,PUNGENT,Pepper
+SPICES,PEPPER,
+SPICES,BROWN SPICE,"Anise, Nutmeg, Cinnamon, Clove"
+NUTTY/COCOA,NUTTY,"Almond, Hazelnut, Peanuts"
+NUTTY/COCOA,COCOA,"Chocolate, Dark Chocolate"
+SWEET,BROWN SUGAR,"Molasses, Maple Syrup, Caramelized, Honey"
+SWEET,VANILLA,
+SWEET,VANILLIN,
+SWEET,OVERALL SWEET,
+SWEET,SWEET AROMATICS,
+FLORAL,BLACK TEA,
+FLORAL,FLORAL,"Chamomile, Rose, Jasmine"

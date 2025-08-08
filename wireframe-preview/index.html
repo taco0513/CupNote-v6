@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CupNote v6.0.0 - Wireframe Preview</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="main-header">
+            <h1>☕ CupNote v6.0.0 - Wireframe Preview</h1>
+            <p>Simple wireframe sketches of main app screens</p>
+        </header>
+
+        <nav class="screen-nav">
+            <button class="nav-btn active" data-screen="home">🏠 홈</button>
+            <button class="nav-btn" data-screen="mode-select">✍️ 모드 선택</button>
+            <button class="nav-btn" data-screen="cafe-coffee">☕ Cafe: 커피정보</button>
+            <button class="nav-btn" data-screen="cafe-taste">👅 Cafe: 맛평가</button>
+            <button class="nav-btn" data-screen="home-coffee">☕ Home: 원두정보</button>
+            <button class="nav-btn" data-screen="home-extraction">⏱️ Home: 추출</button>
+            <button class="nav-btn" data-screen="my-records">📚 내 기록</button>
+            <button class="nav-btn" data-screen="community">🌍 커뮤니티</button>
+            <button class="nav-btn" data-screen="profile">👤 프로필</button>
+        </nav>
+
+        <div class="phone-container">
+            <div class="phone-frame">
+                <div class="phone-screen">
+                    <!-- Home Screen -->
+                    <div id="home" class="screen active">
+                        <div class="status-bar">
+                            <span>9:41</span>
+                            <span>☁️ 📶 🔋</span>
+                        </div>
+                        <div class="screen-content">
+                            <div class="home-header">
+                                <h2>안녕하세요, 커피러버님! ☕</h2>
+                                <p class="date">2024년 1월 8일 월요일</p>
+                            </div>
+                            
+                            <div class="stats-card">
+                                <h3>오늘의 커피</h3>
+                                <div class="stat-row">
+                                    <div class="stat">
+                                        <span class="stat-value">2</span>
+                                        <span class="stat-label">잔</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-value">⭐4.5</span>
+                                        <span class="stat-label">평균</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-value">🔥3</span>
+                                        <span class="stat-label">연속</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="recent-section">
+                                <h3>최근 기록</h3>
+                                <div class="recent-item">
+                                    <div class="coffee-icon">☕</div>
+                                    <div class="coffee-info">
+                                        <strong>에티오피아 예가체페</strong>
+                                        <small>블루보틀 카페 • 2시간 전</small>
+                                    </div>
+                                    <div class="rating">⭐4.5</div>
+                                </div>
+                                <div class="recent-item">
+                                    <div class="coffee-icon">☕</div>
+                                    <div class="coffee-info">
+                                        <strong>콜롬비아 수프리모</strong>
+                                        <small>홈카페 • 오늘 오전</small>
+                                    </div>
+                                    <div class="rating">⭐4.0</div>
+                                </div>
+                            </div>
+
+                            <button class="fab">+ 새 기록</button>
+                        </div>
+                        <div class="bottom-nav">
+                            <div class="nav-item active">🏠</div>
+                            <div class="nav-item">🌍</div>
+                            <div class="nav-item main">+</div>
+                            <div class="nav-item">📚</div>
+                            <div class="nav-item">👤</div>
+                        </div>
+                    </div>
+
+                    <!-- Mode Selection Screen -->
+                    <div id="mode-select" class="screen">
+                        <div class="status-bar">
+                            <span>9:41</span>
+                            <span>☁️ 📶 🔋</span>
+                        </div>
+                        <div class="screen-header">
+                            <button class="back-btn">←</button>
+                            <h2>기록 모드 선택</h2>
+                            <div class="step-indicator">1/6</div>
+                        </div>
+                        <div class="screen-content centered">
+                            <p class="subtitle">어디서 커피를 마시나요?</p>
+                            
+                            <div class="mode-cards">
+                                <div class="mode-card">
+                                    <div class="mode-icon">☕</div>
+                                    <h3>Cafe Mode</h3>
+                                    <p>카페에서 마시는 커피</p>
+                                    <ul class="feature-list">
+                                        <li>✓ GPS 카페 감지</li>
+                                        <li>✓ 메뉴판 OCR 스캔</li>
+                                        <li>✓ 빠른 기록 (5-7분)</li>
+                                    </ul>
+                                    <button class="select-btn">선택</button>
+                                </div>
+                                
+                                <div class="mode-card">
+                                    <div class="mode-icon">🏠</div>
+                                    <h3>HomeCafe Mode</h3>
+                                    <p>집에서 내리는 커피</p>
+                                    <ul class="feature-list">
+                                        <li>✓ 추출 타이머</li>
+                                        <li>✓ 레시피 저장</li>
+                                        <li>✓ 상세 기록 (8-12분)</li>
+                                    </ul>
+                                    <button class="select-btn">선택</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cafe Mode: Coffee Info -->
+                    <div id="cafe-coffee" class="screen">
+                        <div class="status-bar">
+                            <span>9:41</span>
+                            <span>☁️ 📶 🔋</span>
+                        </div>
+                        <div class="screen-header">
+                            <button class="back-btn">←</button>
+                            <h2>커피 정보</h2>
+                            <div class="step-indicator">2/6</div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress" style="width: 33%;"></div>
+                        </div>
+                        <div class="screen-content">
+                            <div class="ocr-section">
+                                <button class="ocr-btn">
+                                    <span class="camera-icon">📷</span>
+                                    <span>메뉴판 사진으로 입력</span>
+                                </button>
+                            </div>
+
+                            <!-- 필수 정보 섹션 -->
+                            <div class="section-title">필수 정보</div>
+                            
+                            <div class="form-group cafe-only">
+                                <label>카페 이름 <span class="optional">(선택)</span></label>
+                                <input type="text" placeholder="예: 블루보틀 성수" class="sketch-input">
+                            </div>
+
+                            <div class="form-group">
+                                <label>로스터리 <span class="required">*</span></label>
+                                <input type="text" placeholder="🔍 검색..." class="sketch-input">
+                                <div class="chip-group">
+                                    <span class="chip">프릳츠</span>
+                                    <span class="chip">블루보틀</span>
+                                    <span class="chip">앤썸</span>
+                                    <span class="chip">콜드브루어스</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>커피 이름 <span class="required">*</span></label>
+                                <input type="text" placeholder="예: 에티오피아 예가체페" class="sketch-input">
+                            </div>
+
+                            <!-- 선택 정보 섹션 -->
+                            <div class="section-title">선택 정보</div>
+
+                            <div class="form-row">
+                                <div class="form-group half">
+                                    <label>원산지</label>
+                                    <select class="sketch-select">
+                                        <option>선택하세요</option>
+                                        <option>🌍 에티오피아</option>
+                                        <option>🌍 콜롬비아</option>
+                                        <option>🌍 케냐</option>
+                                        <option>🌍 브라질</option>
+                                        <option>🌍 과테말라</option>
+                                        <option>🌍 코스타리카</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group half">
+                                    <label>품종</label>
+                                    <select class="sketch-select">
+                                        <option>선택하세요</option>
+                                        <option>게이샤</option>
+                                        <option>버번</option>
+                                        <option>티피카</option>
+                                        <option>카투아이</option>
+                                        <option>SL28</option>
+                                        <option>SL34</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group half">
+                                    <label>가공방식</label>
+                                    <select class="sketch-select">
+                                        <option>선택하세요</option>
+                                        <option>워시드</option>
+                                        <option>내추럴</option>
+                                        <option>허니</option>
+                                        <option>웻헐드</option>
+                                        <option>혐기성</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group half">
+                                    <label>고도</label>
+                                    <input type="text" placeholder="예: 1,800m" class="sketch-input">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>로스팅 레벨</label>
+                                <div class="roast-selector">
+                                    <span class="roast-option">라이트</span>
+                                    <span class="roast-option selected">미디엄</span>
+                                    <span class="roast-option">다크</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bottom-actions">
+                            <button class="btn-secondary">이전</button>
+                            <button class="btn-primary">다음 →</button>
+                        </div>
+                    </div>
+
+                    <!-- Cafe Mode: Taste Evaluation -->
+                    <div id="cafe-taste" class="screen">
+                        <div class="status-bar">
+                            <span>9:41</span>
+                            <span>☁️ 📶 🔋</span>
+                        </div>
+                        <div class="screen-header">
+                            <button class="back-btn">←</button>
+                            <h2>맛 평가</h2>
+                            <div class="step-indicator">4/6</div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress" style="width: 66%;"></div>
+                        </div>
+                        <div class="screen-content">
+                            <div class="rating-section">
+                                <label>전체 평점</label>
+                                <div class="star-rating">
+                                    <span class="star filled">⭐</span>
+                                    <span class="star filled">⭐</span>
+                                    <span class="star filled">⭐</span>
+                                    <span class="star filled">⭐</span>
+                                    <span class="star">⭐</span>
+                                </div>
+                            </div>
+
+                            <div class="taste-sliders">
+                                <div class="slider-group">
+                                    <label>산미</label>
+                                    <div class="slider-container">
+                                        <input type="range" min="1" max="5" value="4" class="taste-slider">
+                                        <div class="slider-labels">
+                                            <span>약함</span>
+                                            <span>강함</span>
+                                        </div>
+                                    </div>
+                                    <div class="expression-chips">
+                                        <span class="chip small">상큼한</span>
+                                        <span class="chip small">레몬같은</span>
+                                        <span class="chip small">밝은</span>
+                                    </div>
+                                </div>
+
+                                <div class="slider-group">
+                                    <label>단맛</label>
+                                    <div class="slider-container">
+                                        <input type="range" min="1" max="5" value="3" class="taste-slider">
+                                        <div class="slider-labels">
+                                            <span>약함</span>
+                                            <span>강함</span>
+                                        </div>
+                                    </div>
+                                    <div class="expression-chips">
+                                        <span class="chip small">캐러멜</span>
+                                        <span class="chip small">꿀같은</span>
+                                        <span class="chip small">초콜릿</span>
+                                    </div>
+                                </div>
+
+                                <div class="slider-group">
+                                    <label>바디감</label>
+                                    <div class="slider-container">
+                                        <input type="range" min="1" max="5" value="3" class="taste-slider">
+                                        <div class="slider-labels">
+                                            <span>가벼움</span>
+                                            <span>무거움</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flavor-wheel-section">
+                                <label>SCA Flavor Wheel</label>
+                                <div class="flavor-categories">
+                                    <div class="category-row">
+                                        <span class="flavor-btn">🍓 과일향</span>
+                                        <span class="flavor-btn">🌿 초록/식물성</span>
+                                    </div>
+                                    <div class="category-row">
+                                        <span class="flavor-btn selected">🍫 견과/코코아</span>
+                                        <span class="flavor-btn">🌸 꽃향기</span>
+                                    </div>
+                                </div>
+                                <div class="selected-flavors">
+                                    <span class="chip">🍫 초콜릿</span>
+                                    <span class="chip">🥜 헤이즐넛</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bottom-actions">
+                            <button class="btn-secondary">이전</button>
+                            <button class="btn-primary">다음 →</button>
+                        </div>
+                    </div>
+
+                    <!-- HomeCafe Mode: Coffee Info -->
+                    <div id="home-coffee" class="screen">
+                        <div class="status-bar">
+                            <span>9:41</span>
+                            <span>☁️ 📶 🔋</span>
+                        </div>
+                        <div class="screen-header">
+                            <button class="back-btn">←</button>
+                            <h2>원두 정보</h2>
+                            <div class="step-indicator">1/5</div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress" style="width: 20%;"></div>
+                        </div>
+                        <div class="screen-content">
+                            <!-- 필수 정보 섹션 -->
+                            <div class="section-title">필수 정보</div>
+                            
+                            <div class="form-group">
+                                <label>로스터리 <span class="required">*</span></label>
+                                <input type="text" placeholder="🔍 검색..." class="sketch-input">
+                                <div class="chip-group">
+                                    <span class="chip">프릳츠</span>
+                                    <span class="chip">블루보틀</span>
+                                    <span class="chip">앤썸</span>
+                                    <span class="chip">콜드브루어스</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>커피 이름 <span class="required">*</span></label>
+                                <input type="text" placeholder="예: 에티오피아 예가체페" class="sketch-input">
+                            </div>
+
+                            <!-- 선택 정보 섹션 -->
+                            <div class="section-title">선택 정보</div>
+
+                            <div class="form-row">
+                                <div class="form-group half">
+                                    <label>원산지</label>
+                                    <select class="sketch-select">
+                                        <option>선택하세요</option>
+                                        <option>🌍 에티오피아</option>
+                                        <option>🌍 콜롬비아</option>
+                                        <option>🌍 케냐</option>
+                                        <option>🌍 브라질</option>
+                                        <option>🌍 과테말라</option>
+                                        <option>🌍 코스타리카</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group half">
+                                    <label>품종</label>
+                                    <select class="sketch-select">
+                                        <option>선택하세요</option>
+                                        <option>게이샤</option>
+                                        <option>버번</option>
+                                        <option>티피카</option>
+                                        <option>카투아이</option>
+                                        <option>SL28</option>
+                                        <option>SL34</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group half">
+                                    <label>가공방식</label>
+                                    <select class="sketch-select">
+                                        <option>선택하세요</option>
+                                        <option>워시드</option>
+                                        <option>내추럴</option>
+                                        <option>허니</option>
+                                        <option>웻헐드</option>
+                                        <option>혐기성</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group half">
+                                    <label>고도</label>
+                                    <input type="text" placeholder="예: 1,800m" class="sketch-input">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>로스팅 레벨</label>
+                                <div class="roast-selector">
+                                    <span class="roast-option">라이트</span>
+                                    <span class="roast-option selected">미디엄</span>
+                                    <span class="roast-option">다크</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>로스팅 날짜</label>
+                                <input type="date" class="sketch-input">
+                            </div>
+                        </div>
+                        <div class="bottom-actions">
+                            <button class="btn-secondary">이전</button>
+                            <button class="btn-primary">다음 →</button>
+                        </div>
+                    </div>
+
+                    <!-- HomeCafe Mode: Extraction -->
+                    <div id="home-extraction" class="screen">
+                        <div class="status-bar">
+                            <span>9:41</span>
+                            <span>☁️ 📶 🔋</span>
+                        </div>
+                        <div class="screen-header">
+                            <button class="back-btn">←</button>
+                            <h2>추출 진행</h2>
+                            <div class="step-indicator">3/5</div>
+                        </div>
+                        <div class="screen-content">
+                            <div class="timer-section">
+                                <div class="circular-timer">
+                                    <svg width="200" height="200" viewBox="0 0 200 200">
+                                        <circle cx="100" cy="100" r="90" fill="none" stroke="#e0e0e0" stroke-width="10"/>
+                                        <circle cx="100" cy="100" r="90" fill="none" stroke="#4CAF50" stroke-width="10"
+                                                stroke-dasharray="565" stroke-dashoffset="141" transform="rotate(-90 100 100)"/>
+                                    </svg>
+                                    <div class="timer-content">
+                                        <div class="timer-time">01:45</div>
+                                        <div class="timer-phase">Blooming</div>
+                                        <div class="timer-target">30g 💧</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flow-rate-section">
+                                <div class="flow-rate-card">
+                                    <label>📊 Flow Rate</label>
+                                    <div class="flow-value">2.1 g/s</div>
+                                    <div class="flow-bar">
+                                        <div class="flow-indicator" style="width: 70%;"></div>
+                                    </div>
+                                    <div class="flow-target">Target: 2.0 g/s ✅</div>
+                                </div>
+                            </div>
+
+                            <div class="brew-assistant">
+                                <div class="assistant-card">
+                                    <div class="assistant-header">
+                                        <span>🤖 Brew Buddy</span>
+                                        <span class="status">⚠️</span>
+                                    </div>
+                                    <p class="assistant-message">추출이 빠릅니다 🐢</p>
+                                    <p class="assistant-tip">💡 천천히 부어주세요</p>
+                                </div>
+                            </div>
+
+                            <div class="extraction-controls">
+                                <button class="control-btn">⏸️ 일시정지</button>
+                                <button class="control-btn">⏭️ 건너뛰기</button>
+                            </div>
+
+                            <div class="recipe-templates">
+                                <label>📋 저장된 레시피</label>
+                                <select class="recipe-select">
+                                    <option>V60 Sweet (15g:250ml)</option>
+                                    <option>Chemex Classic (30g:500ml)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="bottom-actions">
+                            <button class="btn-secondary">취소</button>
+                            <button class="btn-primary">완료 →</button>
+                        </div>
+                    </div>
+
+                    <!-- My Records Screen -->
+                    <div id="my-records" class="screen">
+                        <div class="status-bar">
+                            <span>9:41</span>
+                            <span>☁️ 📶 🔋</span>
+                        </div>
+                        <div class="screen-header">
+                            <h2>내 기록</h2>
+                            <button class="search-btn">🔍</button>
+                        </div>
+                        <div class="screen-content">
+                            <div class="filter-tabs">
+                                <span class="tab active">전체</span>
+                                <span class="tab">카페</span>
+                                <span class="tab">홈카페</span>
+                            </div>
+
+                            <div class="stats-summary">
+                                <div class="mini-stat">
+                                    <span class="value">156</span>
+                                    <span class="label">총 기록</span>
+                                </div>
+                                <div class="mini-stat">
+                                    <span class="value">⭐4.2</span>
+                                    <span class="label">평균</span>
+                                </div>
+                                <div class="mini-stat">
+                                    <span class="value">23</span>
+                                    <span class="label">이번달</span>
+                                </div>
+                            </div>
+
+                            <div class="record-list">
+                                <div class="record-item">
+                                    <div class="record-date">오늘</div>
+                                    <div class="record-content">
+                                        <div class="record-icon">☕</div>
+                                        <div class="record-info">
+                                            <strong>에티오피아 예가체페</strong>
+                                            <small>블루보틀 • Cafe Mode</small>
+                                            <div class="record-tags">
+                                                <span class="tag">🍓 과일향</span>
+                                                <span class="tag">🌸 꽃향기</span>
+                                            </div>
+                                        </div>
+                                        <div class="record-rating">⭐4.5</div>
+                                    </div>
+                                </div>
+                                <div class="record-item">
+                                    <div class="record-content">
+                                        <div class="record-icon">🏠</div>
+                                        <div class="record-info">
+                                            <strong>콜롬비아 수프리모</strong>
+                                            <small>V60 • HomeCafe Mode</small>
+                                            <div class="record-tags">
+                                                <span class="tag">🍫 초콜릿</span>
+                                                <span class="tag">🥜 견과류</span>
+                                            </div>
+                                        </div>
+                                        <div class="record-rating">⭐4.0</div>
+                                    </div>
+                                </div>
+                                <div class="record-item">
+                                    <div class="record-date">어제</div>
+                                    <div class="record-content">
+                                        <div class="record-icon">☕</div>
+                                        <div class="record-info">
+                                            <strong>케냐 AA</strong>
+                                            <small>앤썸커피 • Cafe Mode</small>
+                                            <div class="record-tags">
+                                                <span class="tag">🍇 블랙커런트</span>
+                                            </div>
+                                        </div>
+                                        <div class="record-rating">⭐5.0</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bottom-nav">
+                            <div class="nav-item">🏠</div>
+                            <div class="nav-item">🌍</div>
+                            <div class="nav-item main">+</div>
+                            <div class="nav-item active">📚</div>
+                            <div class="nav-item">👤</div>
+                        </div>
+                    </div>
+
+                    <!-- Community Screen -->
+                    <div id="community" class="screen">
+                        <div class="status-bar">
+                            <span>9:41</span>
+                            <span>☁️ 📶 🔋</span>
+                        </div>
+                        <div class="screen-header">
+                            <h2>커뮤니티</h2>
+                        </div>
+                        <div class="screen-content">
+                            <div class="community-card">
+                                <h3>☕ 인기 커피</h3>
+                                <div class="popular-coffee">
+                                    <div class="coffee-rank">
+                                        <span class="rank">#1</span>
+                                        <div class="coffee-details">
+                                            <strong>에티오피아 예가체페</strong>
+                                            <small>152명이 마셨어요</small>
+                                        </div>
+                                        <span class="avg-rating">⭐4.5</span>
+                                    </div>
+                                    <div class="coffee-rank">
+                                        <span class="rank">#2</span>
+                                        <div class="coffee-details">
+                                            <strong>콜롬비아 게이샤</strong>
+                                            <small>98명이 마셨어요</small>
+                                        </div>
+                                        <span class="avg-rating">⭐4.7</span>
+                                    </div>
+                                    <div class="coffee-rank">
+                                        <span class="rank">#3</span>
+                                        <div class="coffee-details">
+                                            <strong>케냐 AA</strong>
+                                            <small>87명이 마셨어요</small>
+                                        </div>
+                                        <span class="avg-rating">⭐4.3</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="community-card">
+                                <h3>🎯 커뮤니티 매치</h3>
+                                <div class="match-result">
+                                    <p>같은 커피를 마신 사람들과의 매치율</p>
+                                    <div class="match-score">85%</div>
+                                    <p class="match-desc">당신과 비슷한 취향을 가진<br>23명이 이 커피를 좋아했어요!</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bottom-nav">
+                            <div class="nav-item">🏠</div>
+                            <div class="nav-item active">🌍</div>
+                            <div class="nav-item main">+</div>
+                            <div class="nav-item">📚</div>
+                            <div class="nav-item">👤</div>
+                        </div>
+                    </div>
+
+                    <!-- Profile Screen -->
+                    <div id="profile" class="screen">
+                        <div class="status-bar">
+                            <span>9:41</span>
+                            <span>☁️ 📶 🔋</span>
+                        </div>
+                        <div class="screen-header">
+                            <h2>프로필</h2>
+                            <button class="settings-btn">⚙️</button>
+                        </div>
+                        <div class="screen-content">
+                            <div class="profile-header">
+                                <div class="avatar">👤</div>
+                                <h3>커피러버</h3>
+                                <p class="member-since">2024년 1월부터</p>
+                            </div>
+
+                            <div class="profile-stats">
+                                <div class="stat-item">
+                                    <span class="stat-value">156</span>
+                                    <span class="stat-label">총 기록</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value">45</span>
+                                    <span class="stat-label">카페</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value">12</span>
+                                    <span class="stat-label">배지</span>
+                                </div>
+                            </div>
+
+                            <div class="achievements-section">
+                                <h3>🏆 획득 배지</h3>
+                                <div class="badge-grid">
+                                    <div class="badge">
+                                        <span class="badge-icon">🥉</span>
+                                        <span class="badge-name">첫 발걸음</span>
+                                    </div>
+                                    <div class="badge">
+                                        <span class="badge-icon">🥈</span>
+                                        <span class="badge-name">커피 애호가</span>
+                                    </div>
+                                    <div class="badge">
+                                        <span class="badge-icon">🥇</span>
+                                        <span class="badge-name">100잔 달성</span>
+                                    </div>
+                                    <div class="badge">
+                                        <span class="badge-icon">🔥</span>
+                                        <span class="badge-name">7일 연속</span>
+                                    </div>
+                                    <div class="badge">
+                                        <span class="badge-icon">🌍</span>
+                                        <span class="badge-name">탐험가</span>
+                                    </div>
+                                    <div class="badge locked">
+                                        <span class="badge-icon">🔒</span>
+                                        <span class="badge-name">???</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="taste-profile">
+                                <h3>☕ 내 취향 프로필</h3>
+                                <div class="taste-chart">
+                                    <div class="taste-item">
+                                        <span>산미</span>
+                                        <div class="taste-bar">
+                                            <div class="taste-fill" style="width: 70%;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="taste-item">
+                                        <span>단맛</span>
+                                        <div class="taste-bar">
+                                            <div class="taste-fill" style="width: 60%;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="taste-item">
+                                        <span>바디</span>
+                                        <div class="taste-bar">
+                                            <div class="taste-fill" style="width: 50%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bottom-nav">
+                            <div class="nav-item">🏠</div>
+                            <div class="nav-item">🌍</div>
+                            <div class="nav-item main">+</div>
+                            <div class="nav-item">📚</div>
+                            <div class="nav-item active">👤</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <h3>📱 Screen Information</h3>
+            <div id="screen-info">
+                <p>Select a screen from the navigation above to view its wireframe.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
