@@ -1,0 +1,114 @@
+# CupNote v6 Supabase Configuration
+# 로컬 개발 환경에서 사용되는 설정입니다.
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[auth]
+enabled = true
+port = 54324
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://cupnote.app"]
+jwt_expiry = 3600
+refresh_token_rotation_enabled = true
+refresh_token_reuse_interval = 10
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false
+
+# OAuth 설정 (추후 구현 예정)
+[auth.external.apple]
+enabled = false
+client_id = ""
+secret = ""
+
+[auth.external.google]
+enabled = false
+client_id = ""
+secret = ""
+
+[auth.external.kakao]
+enabled = false
+client_id = ""
+secret = ""
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[realtime]
+enabled = true
+port = 54323
+ip_version = "ipv4"
+
+[storage]
+enabled = true
+port = 54325
+file_size_limit = "50MiB"
+# CupNote에서 업로드하는 이미지들을 위한 설정
+buckets = [
+  { name = "coffee-photos", public = true },
+  { name = "user-avatars", public = true },
+  { name = "cafe-photos", public = true }
+]
+
+[inbucket]
+enabled = true
+port = 54324
+# 개발 중 이메일 테스트를 위한 설정
+smtp_port = 54325
+pop3_port = 54326
+
+[functions]
+enabled = true
+port = 54327
+verify_jwt = false
+
+[analytics]
+enabled = false
+
+[edge_runtime]
+enabled = true
+port = 54328
+# Edge Functions 설정 (추후 AI 기능 구현 시 사용)
+
+# CupNote v6 특별 설정
+[cupnote]
+# Korean UX 최적화
+default_locale = "ko-KR"
+supported_locales = ["ko-KR", "en-US"]
+
+# 성능 최적화
+connection_pooler_enabled = true
+max_connections = 100
+statement_timeout = "30s"
+idle_in_transaction_timeout = "60s"
+
+# 백업 및 보안
+backup_retention_days = 30
+log_retention_days = 7
+ssl_enforcement = true
+
+# 개발 모드 설정
+[development]
+log_level = "debug"
+enable_migrations_check = true
+enable_seed_data = true
+hot_reload = true
+
+# 프로덕션 환경 변수 (환경별 오버라이드)
+[production]
+log_level = "info"
+enable_migrations_check = false
+enable_seed_data = false
+hot_reload = false
+ssl_enforcement = true
+max_connections = 500
