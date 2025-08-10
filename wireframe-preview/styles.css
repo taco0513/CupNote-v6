@@ -1,0 +1,1145 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+    color: #333;
+}
+
+/* Container */
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Main Header */
+.main-header {
+    text-align: center;
+    color: white;
+    margin-bottom: 30px;
+}
+
+.main-header h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+.main-header p {
+    font-size: 1.2em;
+    opacity: 0.9;
+}
+
+/* Screen Navigation */
+.screen-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 30px;
+}
+
+.nav-btn {
+    background: white;
+    border: 3px solid #333;
+    border-radius: 20px;
+    padding: 10px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: inherit;
+    box-shadow: 3px 3px 0 #333;
+}
+
+.nav-btn:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 5px 5px 0 #333;
+}
+
+.nav-btn.active {
+    background: #FFE066;
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0 #333;
+}
+
+/* Phone Container */
+.phone-container {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    align-items: flex-start;
+}
+
+/* Phone Frame */
+.phone-frame {
+    width: 375px;
+    height: 812px;
+    background: #f8f8f8;
+    border: 8px solid #333;
+    border-radius: 40px;
+    box-shadow: 10px 10px 30px rgba(0,0,0,0.3);
+    overflow: hidden;
+    position: relative;
+}
+
+/* Phone Screen */
+.phone-screen {
+    width: 100%;
+    height: 100%;
+    background: white;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Screen */
+.screen {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: none;
+    flex-direction: column;
+    background: white;
+}
+
+.screen.active {
+    display: flex;
+}
+
+/* Status Bar */
+.status-bar {
+    height: 44px;
+    background: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    font-size: 14px;
+    border-bottom: 2px solid #333;
+}
+
+/* Screen Header */
+.screen-header {
+    height: 56px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    border-bottom: 2px solid #333;
+}
+
+.screen-header h2 {
+    font-size: 20px;
+    flex: 1;
+    text-align: center;
+}
+
+.back-btn, .search-btn, .settings-btn {
+    background: none;
+    border: 2px solid #333;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.step-indicator {
+    background: #FFE066;
+    padding: 4px 12px;
+    border-radius: 12px;
+    border: 2px solid #333;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* Progress Bar */
+.progress-bar {
+    height: 4px;
+    background: #e0e0e0;
+    position: relative;
+}
+
+.progress {
+    height: 100%;
+    background: #4CAF50;
+    transition: width 0.3s;
+}
+
+/* Screen Content */
+.screen-content {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: white;
+}
+
+.screen-content.centered {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+    height: 80px;
+    background: white;
+    border-top: 2px solid #333;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.nav-item {
+    font-size: 24px;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 50%;
+    transition: all 0.3s;
+}
+
+.nav-item.active {
+    background: #FFE066;
+    border: 2px solid #333;
+}
+
+.nav-item.main {
+    background: #4CAF50;
+    color: white;
+    font-size: 32px;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid #333;
+    box-shadow: 3px 3px 0 #333;
+}
+
+/* Bottom Actions */
+.bottom-actions {
+    display: flex;
+    gap: 10px;
+    padding: 20px;
+    background: white;
+    border-top: 2px solid #333;
+}
+
+.btn-primary, .btn-secondary {
+    flex: 1;
+    padding: 15px;
+    border: 3px solid #333;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 3px 3px 0 #333;
+}
+
+.btn-primary {
+    background: #4CAF50;
+    color: white;
+}
+
+.btn-secondary {
+    background: white;
+}
+
+/* Home Screen Specific */
+.home-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.home-header h2 {
+    font-size: 20px;
+    margin-bottom: 5px;
+}
+
+.date {
+    color: #666;
+    font-size: 14px;
+}
+
+.stats-card {
+    background: #FFE066;
+    border: 3px solid #333;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 4px 4px 0 #333;
+}
+
+.stats-card h3 {
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-around;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat-value {
+    display: block;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #666;
+}
+
+.recent-section h3 {
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.recent-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background: #f8f8f8;
+    border: 2px solid #333;
+    border-radius: 12px;
+    margin-bottom: 10px;
+}
+
+.coffee-icon {
+    font-size: 32px;
+    margin-right: 15px;
+}
+
+.coffee-info {
+    flex: 1;
+}
+
+.coffee-info strong {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.coffee-info small {
+    color: #666;
+    font-size: 12px;
+}
+
+.rating {
+    font-size: 18px;
+}
+
+/* FAB */
+.fab {
+    position: absolute;
+    bottom: 100px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    background: #4CAF50;
+    color: white;
+    border: 3px solid #333;
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 4px 4px 0 #333;
+    font-family: inherit;
+}
+
+/* Mode Selection */
+.subtitle {
+    font-size: 18px;
+    margin-bottom: 30px;
+    color: #666;
+}
+
+.mode-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    max-width: 300px;
+}
+
+.mode-card {
+    background: white;
+    border: 3px solid #333;
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 4px 4px 0 #333;
+}
+
+.mode-icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+.mode-card h3 {
+    margin-bottom: 5px;
+    font-size: 20px;
+}
+
+.mode-card p {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+.feature-list {
+    list-style: none;
+    text-align: left;
+    margin-bottom: 15px;
+    font-size: 12px;
+}
+
+.feature-list li {
+    margin-bottom: 5px;
+}
+
+.select-btn {
+    width: 100%;
+    padding: 10px;
+    background: #4CAF50;
+    color: white;
+    border: 2px solid #333;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-family: inherit;
+}
+
+/* Form Elements */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.form-group.half {
+    flex: 1;
+}
+
+.form-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 20px 0 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #333;
+}
+
+.required {
+    color: #FF5722;
+    font-weight: bold;
+}
+
+.optional {
+    color: #999;
+    font-size: 12px;
+    font-weight: normal;
+}
+
+/* Hide cafe-only fields in HomeCafe mode */
+.home-mode .cafe-only {
+    display: none;
+}
+
+.sketch-input, .sketch-select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #333;
+    border-radius: 8px;
+    font-size: 16px;
+    background: white;
+    font-family: inherit;
+}
+
+.sketch-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 20px;
+    padding-right: 40px;
+}
+
+/* OCR Section */
+.ocr-section {
+    margin-bottom: 20px;
+}
+
+.ocr-btn {
+    width: 100%;
+    padding: 20px;
+    background: #E3F2FD;
+    border: 3px dashed #2196F3;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 16px;
+    font-family: inherit;
+}
+
+.camera-icon {
+    font-size: 24px;
+}
+
+/* Chips */
+.chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.chip {
+    display: inline-block;
+    padding: 6px 12px;
+    background: #FFE066;
+    border: 2px solid #333;
+    border-radius: 16px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.chip.small {
+    font-size: 12px;
+    padding: 4px 10px;
+}
+
+/* Roast Selector */
+.roast-selector {
+    display: flex;
+    gap: 10px;
+}
+
+.roast-option {
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+    border: 2px solid #333;
+    border-radius: 8px;
+    cursor: pointer;
+    background: white;
+}
+
+.roast-option.selected {
+    background: #FFE066;
+    font-weight: bold;
+}
+
+/* Star Rating */
+.star-rating {
+    display: flex;
+    gap: 10px;
+    font-size: 32px;
+    margin: 10px 0;
+}
+
+.star {
+    cursor: pointer;
+    filter: grayscale(100%);
+}
+
+.star.filled {
+    filter: none;
+}
+
+/* Taste Sliders */
+.slider-group {
+    margin-bottom: 20px;
+}
+
+.slider-group label {
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.slider-container {
+    position: relative;
+}
+
+.taste-slider {
+    width: 100%;
+    height: 8px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: #e0e0e0;
+    border-radius: 4px;
+    outline: none;
+}
+
+.taste-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    background: #4CAF50;
+    border: 3px solid #333;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.slider-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #666;
+}
+
+.expression-chips {
+    margin-top: 10px;
+}
+
+/* Flavor Wheel Section */
+.flavor-wheel-section {
+    margin-top: 20px;
+}
+
+.flavor-wheel-section label {
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.flavor-categories {
+    margin-bottom: 15px;
+}
+
+.category-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.flavor-btn {
+    flex: 1;
+    padding: 12px;
+    background: white;
+    border: 2px solid #333;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    text-align: center;
+}
+
+.flavor-btn.selected {
+    background: #FFE066;
+    font-weight: bold;
+}
+
+.selected-flavors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* Timer Section */
+.timer-section {
+    margin-bottom: 20px;
+}
+
+.circular-timer {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    margin: 0 auto;
+}
+
+.circular-timer svg {
+    transform: rotate(-90deg);
+}
+
+.timer-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.timer-time {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.timer-phase {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.timer-target {
+    font-size: 14px;
+}
+
+/* Flow Rate Section */
+.flow-rate-card {
+    background: #E8F5E9;
+    border: 3px solid #333;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.flow-rate-card label {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.flow-value {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.flow-bar {
+    height: 8px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    margin-bottom: 5px;
+    overflow: hidden;
+}
+
+.flow-indicator {
+    height: 100%;
+    background: #4CAF50;
+    transition: width 0.3s;
+}
+
+.flow-target {
+    font-size: 12px;
+    color: #666;
+}
+
+/* Brew Assistant */
+.brew-assistant {
+    margin-bottom: 20px;
+}
+
+.assistant-card {
+    background: #FFF3E0;
+    border: 3px solid #333;
+    border-radius: 12px;
+    padding: 15px;
+}
+
+.assistant-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.assistant-message {
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.assistant-tip {
+    font-size: 14px;
+    color: #666;
+}
+
+/* Extraction Controls */
+.extraction-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.control-btn {
+    flex: 1;
+    padding: 12px;
+    background: white;
+    border: 3px solid #333;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+/* Recipe Templates */
+.recipe-templates label {
+    display: block;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.recipe-select {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #333;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    font-family: inherit;
+}
+
+/* Records Screen */
+.filter-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.tab {
+    padding: 8px 16px;
+    background: white;
+    border: 2px solid #333;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.tab.active {
+    background: #FFE066;
+    font-weight: bold;
+}
+
+.stats-summary {
+    display: flex;
+    justify-content: space-around;
+    background: #f8f8f8;
+    border: 2px solid #333;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.mini-stat {
+    text-align: center;
+}
+
+.mini-stat .value {
+    display: block;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.mini-stat .label {
+    font-size: 12px;
+    color: #666;
+}
+
+.record-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.record-item {
+    background: white;
+}
+
+.record-date {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.record-content {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background: #f8f8f8;
+    border: 2px solid #333;
+    border-radius: 12px;
+}
+
+.record-icon {
+    font-size: 32px;
+    margin-right: 15px;
+}
+
+.record-info {
+    flex: 1;
+}
+
+.record-info strong {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.record-info small {
+    color: #666;
+    font-size: 12px;
+}
+
+.record-tags {
+    display: flex;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.tag {
+    font-size: 11px;
+    padding: 2px 6px;
+    background: #E8F5E9;
+    border: 1px solid #333;
+    border-radius: 8px;
+}
+
+.record-rating {
+    font-size: 18px;
+}
+
+/* Community Screen */
+.community-card {
+    background: white;
+    border: 3px solid #333;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 4px 4px 0 #333;
+}
+
+.community-card h3 {
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.popular-coffee {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.coffee-rank {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.rank {
+    background: #FFE066;
+    border: 2px solid #333;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.coffee-details {
+    flex: 1;
+}
+
+.coffee-details strong {
+    display: block;
+    margin-bottom: 3px;
+}
+
+.coffee-details small {
+    color: #666;
+    font-size: 12px;
+}
+
+.avg-rating {
+    font-size: 16px;
+}
+
+.match-result {
+    text-align: center;
+}
+
+.match-score {
+    font-size: 48px;
+    font-weight: bold;
+    color: #4CAF50;
+    margin: 20px 0;
+}
+
+.match-desc {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Profile Screen */
+.profile-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.avatar {
+    width: 80px;
+    height: 80px;
+    background: #f8f8f8;
+    border: 3px solid #333;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    margin: 0 auto 10px;
+}
+
+.profile-header h3 {
+    margin-bottom: 5px;
+}
+
+.member-since {
+    color: #666;
+    font-size: 14px;
+}
+
+.profile-stats {
+    display: flex;
+    justify-content: space-around;
+    background: #FFE066;
+    border: 3px solid #333;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.achievements-section h3 {
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.badge-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.badge {
+    text-align: center;
+    padding: 10px;
+    background: white;
+    border: 2px solid #333;
+    border-radius: 12px;
+}
+
+.badge.locked {
+    background: #f0f0f0;
+    opacity: 0.5;
+}
+
+.badge-icon {
+    display: block;
+    font-size: 32px;
+    margin-bottom: 5px;
+}
+
+.badge-name {
+    font-size: 10px;
+}
+
+.taste-profile h3 {
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.taste-chart {
+    background: #f8f8f8;
+    border: 2px solid #333;
+    border-radius: 12px;
+    padding: 15px;
+}
+
+.taste-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.taste-item span {
+    width: 60px;
+    font-size: 14px;
+}
+
+.taste-bar {
+    flex: 1;
+    height: 20px;
+    background: #e0e0e0;
+    border: 2px solid #333;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.taste-fill {
+    height: 100%;
+    background: #4CAF50;
+}
+
+/* Info Panel */
+.info-panel {
+    background: white;
+    border: 3px solid #333;
+    border-radius: 20px;
+    padding: 20px;
+    margin-top: 30px;
+    box-shadow: 5px 5px 0 #333;
+}
+
+.info-panel h3 {
+    margin-bottom: 15px;
+}
+
+#screen-info {
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* Scrollbar Styling */
+.screen-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.screen-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.screen-content::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.screen-content::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
