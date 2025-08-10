@@ -19,6 +19,7 @@ import { useNavigation } from '@react-navigation/native';
 import useStore from '../store/useStore';
 
 // Import new screens
+import ModeSelect from './tasting/ModeSelect';
 import CoffeeInfo from './tasting/CoffeeInfo';
 import BrewSetup from './tasting/BrewSetup';
 import FlavorSelection from './tasting/FlavorSelection';
@@ -737,7 +738,7 @@ export default function TastingFlowNavigator() {
         animation: 'slide_from_right',
       }}
     >
-      <Stack.Screen name="ModeSelect" component={ModeSelectScreen} />
+      <Stack.Screen name="ModeSelect" component={ModeSelect} />
       <Stack.Screen name="CoffeeInfo" component={CoffeeInfo} />
       <Stack.Screen name="BrewSetup" component={BrewSetup} />
       <Stack.Screen name="FlavorSelection" component={FlavorSelection} />

@@ -1,79 +1,225 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# CupNote Mobile Application
 
-# Getting Started
+A React Native mobile application for specialty coffee enthusiasts, providing a comprehensive coffee tasting experience with two distinct recording modes and community features.
 
->**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
+## 🎯 Overview
 
-## Step 1: Start the Metro Server
+CupNote is designed for coffee lovers who want to systematically record, analyze, and share their coffee tasting experiences. The app features two specialized modes:
 
-First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
+- **☕ Cafe Mode**: Quick 5-7 minute recording for cafe experiences
+- **🏠 HomeCafe Mode**: Detailed 8-12 minute recording for home brewing
 
-To start Metro, run the following command from the _root_ of your React Native project:
+## 🏗️ Architecture
 
-```bash
-# using npm
-npm start
+### Technology Stack
+- **React Native**: 0.75.4 with TypeScript
+- **Navigation**: React Navigation v6 with type-safe routing
+- **State Management**: Zustand for global state
+- **Styling**: Custom design system with theme tokens
+- **Development**: Metro bundler with TypeScript strict mode
 
-# OR using Yarn
-yarn start
+### Project Structure
+```
+src/
+├── components/           # Reusable UI components
+│   └── common/          # Design system components
+├── screens/             # Application screens
+│   ├── tasting/        # TastingFlow screens (7-8 screens)
+│   └── Home.tsx        # Main application screens
+├── navigation/         # Navigation configuration and types
+├── store/             # Zustand state management
+├── styles/            # Theme tokens and design system
+├── utils/             # Utility functions and helpers
+└── types/             # TypeScript type definitions
 ```
 
-## Step 2: Start your Application
+## 🚀 Getting Started
 
-Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
+### Prerequisites
+- Node.js 16+ 
+- React Native CLI
+- iOS: Xcode 12+ (for iOS development)
+- Android: Android Studio with API 28+ (for Android development)
 
-### For Android
-
+### Installation
 ```bash
-# using npm
-npm run android
+# Clone the repository
+git clone <repository-url>
+cd CupNoteClean
 
-# OR using Yarn
-yarn android
+# Install dependencies
+npm install
+
+# iOS setup (macOS only)
+cd ios && pod install && cd ..
+
+# Start Metro bundler
+npx react-native start
+
+# Run on iOS (separate terminal)
+npx react-native run-ios
+
+# Run on Android (separate terminal)
+npx react-native run-android
 ```
 
-### For iOS
-
+### Development Commands
 ```bash
-# using npm
-npm run ios
+# Start with cache reset (recommended for component issues)
+npx react-native start --reset-cache
 
-# OR using Yarn
-yarn ios
+# TypeScript type checking
+npx tsc --noEmit
+
+# Linting
+npm run lint
 ```
 
-If everything is set up _correctly_, you should see your new app running in your _Android Emulator_ or _iOS Simulator_ shortly provided you have set up your emulator/simulator correctly.
+## 🎨 Design System
 
-This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
+### Components
+The application uses a comprehensive component library:
 
-## Step 3: Modifying your App
+- **Button**: Primary, secondary, outline, ghost variants
+- **Input**: Text input with autocomplete support
+- **Badge**: Status indicators and labels
+- **Chip**: Selectable tags and filters
+- **Slider**: Touch-responsive value selection
+- **ProgressBar**: Step-by-step progress indication
+- **SegmentedControl**: Toggle between options
 
-Now that you have successfully run the app, let's modify it.
+### Theme Tokens
+```typescript
+// Colors
+colors.primary: '#8B4513'        // Coffee brown
+colors.gray[500]: '#737373'      // Accessible gray text
+colors.text.primary: '#3E1F0A'   // Dark brown text
 
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
+// Typography
+typography.fontSize.md: 16       // Base font size
+typography.fontWeight.medium: '500'
 
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
+// Spacing
+spacing.md: 12                   // Base spacing unit
+```
 
-## Congratulations! :tada:
+## ✨ Key Features
 
-You've successfully run and modified your React Native App. :partying_face:
+### TastingFlow System
+Multi-step coffee recording workflow with two optimized paths:
 
-### Now what?
+#### Cafe Mode (7 steps)
+1. **Mode Selection**: Choose recording mode
+2. **Coffee Info**: Basic coffee and cafe details
+3. **Flavor Selection**: Primary taste characteristics
+4. **Sensory Expression**: Descriptive taste notes
+5. **Sensory MouthFeel**: Texture and body evaluation
+6. **Personal Notes**: Free-form thoughts and memories
+7. **Result**: Summary and sharing options
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [Introduction to React Native](https://reactnative.dev/docs/getting-started).
+#### HomeCafe Mode (8 steps)
+1. **Mode Selection**: Choose recording mode
+2. **Coffee Info**: Detailed coffee specifications
+3. **Brew Setup**: Equipment and recipe parameters
+4. **Flavor Selection**: Primary taste characteristics
+5. **Sensory Expression**: Descriptive taste notes
+6. **Sensory MouthFeel**: Texture and body evaluation
+7. **Personal Notes**: Free-form thoughts and memories
+8. **Result**: Summary and sharing options
 
-# Troubleshooting
+### State Management
+- **Zustand Store**: Global application state
+- **Persistent Data**: TastingFlow data preservation across screens
+- **Draft Management**: Auto-save functionality for user inputs
 
-If you can't get this to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+### Navigation
+- **Type-Safe Routing**: Full TypeScript support for navigation parameters
+- **Consistent UX**: Standardized headers and back navigation
+- **Deep Linking**: Support for direct screen access
 
-# Learn More
+## 🔧 Recent Fixes & Improvements
 
-To learn more about React Native, take a look at the following resources:
+### Critical Bug Fixes ✅
+1. **Badge Component**: Fixed prop interface mismatches causing empty displays
+2. **Slider Component**: Complete rewrite fixing NaN values and drag functionality
+3. **Navigation**: Added missing back buttons for consistent user experience
+4. **Color Accessibility**: Updated all colors to meet WCAG 2.1 AA standards (4.5:1 contrast)
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+### Technical Improvements ✅
+- Resolved TypeScript prop interface conflicts
+- Enhanced component reliability with safe defaults
+- Improved accessibility compliance across all screens
+- Optimized touch interactions and gesture handling
+
+See [docs/COMPONENT_FIXES.md](docs/COMPONENT_FIXES.md) for detailed technical information.
+
+## 🧪 Testing
+
+### Component Testing
+All components are tested for:
+- ✅ Proper prop interface compatibility
+- ✅ Touch interaction responsiveness
+- ✅ Accessibility compliance
+- ✅ Cross-platform compatibility
+
+### Development Testing
+```bash
+# Reset Metro cache for component issues
+npx react-native start --reset-cache
+
+# Type checking
+npx tsc --noEmit
+
+# Platform testing
+npx react-native run-ios
+npx react-native run-android
+```
+
+## 📱 Platform Compatibility
+
+- **iOS**: 12.0+ (iPhone 6s and newer)
+- **Android**: API Level 28+ (Android 9.0+)
+- **TypeScript**: Strict mode enabled
+- **Accessibility**: WCAG 2.1 AA compliant
+
+## 🎯 Development Guidelines
+
+### Component Development
+- Use TypeScript strict mode with proper interfaces
+- Follow design system patterns and theme tokens
+- Ensure accessibility compliance (4.5:1 contrast minimum)
+- Add proper error handling and safe defaults
+
+### Code Quality
+- All components must pass TypeScript strict checks
+- Follow established prop interface patterns
+- Maintain consistent styling with theme tokens
+- Test across iOS and Android platforms
+
+### Performance
+- Optimize component re-renders with proper memoization
+- Use efficient state management patterns
+- Handle touch interactions with proper debouncing
+- Minimize bundle size with proper imports
+
+## 📚 Documentation
+
+- [Component Fixes](docs/COMPONENT_FIXES.md) - Detailed fix documentation
+- [Changelog](docs/CHANGELOG.md) - Version history and changes
+- [Claude Guide](CLAUDE.md) - AI development assistant configuration
+
+## 🤝 Contributing
+
+1. Ensure all TypeScript errors are resolved
+2. Test components on both iOS and Android
+3. Verify accessibility compliance
+4. Follow established code patterns and conventions
+5. Update documentation for significant changes
+
+## 📄 License
+
+This project is private and proprietary. All rights reserved.
+
+---
+
+**Built with ❤️ for coffee enthusiasts**

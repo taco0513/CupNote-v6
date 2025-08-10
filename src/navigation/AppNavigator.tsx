@@ -366,7 +366,9 @@ export function AppNavigator() {
                     component={TastingFlowNavigator}
                     options={{
                       presentation: 'fullScreenModal',
+                      headerShown: false,
                       gestureEnabled: false,
+                      animation: 'slide_from_bottom',
                     }}
                   />
                   

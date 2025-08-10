@@ -16,6 +16,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors, spacing, typography } from '../../styles/theme';
+import { Card, Button, ProgressBar, Badge, Chip, Input } from '../../components/common';
 import useStore from '../../store/useStore';
 import type { TastingFlowNavigationProp, TastingFlowRouteProp } from '../../types/navigation';
 
@@ -225,6 +226,19 @@ export const PersonalNotes: React.FC = () => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoid}
       >
+        {/* Navigation Header */}
+        <View style={styles.navHeader}>
+          <TouchableOpacity 
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.backButtonText}>‹</Text>
+          </TouchableOpacity>
+          <Text style={styles.navTitle}>개인 노트</Text>
+          <View style={styles.navSpacer} />
+        </View>
+
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
@@ -232,52 +246,62 @@ export const PersonalNotes: React.FC = () => {
         >
           {/* 헤더 */}
           <View style={styles.header}>
-            <View style={styles.progressBar}>
-              <View style={[styles.progressFill, { width: '94%' }]} />
+            <ProgressBar 
+              progress={route.params.mode === 'cafe' ? 1.0 : 1.0} 
+              style={styles.progressBar} 
+            />
+            <View style={styles.headerContent}>
+              <Text style={styles.title}>개인 노트</Text>
+              <Badge 
+                text={route.params.mode === 'cafe' ? '☕ 카페 모드' : '🏠 홈카페 모드'}
+                variant={route.params.mode === 'cafe' ? 'primary' : 'info'}
+              />
             </View>
-            <Text style={styles.title}>개인 노트</Text>
           </View>
 
           {/* 안내 메시지 */}
-          <View style={styles.guideSection}>
+          <Card style={styles.guideSection}>
             <Text style={styles.guideTitle}>
               이 커피에 대한 개인적인 생각을 자유롭게 적어보세요
             </Text>
             <Text style={styles.guideSubtitle}>
               특별한 순간이나 느낌을 기록해두면 좋은 추억이 됩니다
             </Text>
-          </View>
+          </Card>
 
           {/* 메인 입력 영역 */}
-          <View style={styles.inputSection}>
-            <View style={styles.textAreaContainer}>
-              <TextInput
-                style={[
-                  styles.textArea,
-                  isOverLimit && styles.textAreaError
-                ]}
-                value={commentText}
-                onChangeText={handleTextChange}
-                placeholder="예) 아침에 마시기 좋은 부드러운 맛이었다..."
-                placeholderTextColor={colors.gray400}
-                multiline
-                maxLength={200}
-                textAlignVertical="top"
+          <Card style={styles.inputSection}>
+            <TextInput
+              style={[
+                styles.textArea,
+                isOverLimit && styles.textAreaError
+              ]}
+              value={commentText}
+              onChangeText={handleTextChange}
+              placeholder="예) 아침에 마시기 좋은 부드러운 맛이었다..."
+              placeholderTextColor={colors.gray[500]}
+              multiline
+              maxLength={200}
+              textAlignVertical="top"
+            />
+            <View style={styles.textAreaFooter}>
+              <Text style={[
+                styles.characterCount,
+                isOverLimit && styles.characterCountError
+              ]}>
+                {characterCount}/200
+              </Text>
+              <Badge 
+                text={getAutoSaveText()}
+                variant={autoSaveStatus === 'saved' ? 'success' : 
+                         autoSaveStatus === 'saving' ? 'warning' : 'error'}
+                size="small"
               />
-              <View style={styles.textAreaFooter}>
-                <Text style={[
-                  styles.characterCount,
-                  isOverLimit && styles.characterCountError
-                ]}>
-                  {characterCount}/200
-                </Text>
-                <Text style={styles.autoSaveText}>{getAutoSaveText()}</Text>
-              </View>
             </View>
-          </View>
+          </Card>
 
           {/* 빠른 입력 도구 */}
-          <View style={styles.quickToolsSection}>
+          <Card style={styles.quickToolsSection}>
             <TouchableOpacity
               style={styles.sectionHeader}
               onPress={() => setShowQuickTools(!showQuickTools)}
@@ -292,29 +316,20 @@ export const PersonalNotes: React.FC = () => {
             {showQuickTools && (
               <View style={styles.expressionGrid}>
                 {QUICK_EXPRESSIONS.map(expression => (
-                  <TouchableOpacity
+                  <Chip
                     key={expression}
-                    style={[
-                      styles.expressionChip,
-                      selectedExpressions.includes(expression) && styles.expressionChipSelected
-                    ]}
+                    label={expression}
+                    selected={selectedExpressions.includes(expression)}
                     onPress={() => toggleExpression(expression)}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={[
-                      styles.expressionText,
-                      selectedExpressions.includes(expression) && styles.expressionTextSelected
-                    ]}>
-                      {expression}
-                    </Text>
-                  </TouchableOpacity>
+                    style={styles.expressionChip}
+                  />
                 ))}
               </View>
             )}
-          </View>
+          </Card>
 
           {/* 감정 태그 */}
-          <View style={styles.emotionSection}>
+          <Card style={styles.emotionSection}>
             <TouchableOpacity
               style={styles.sectionHeader}
               onPress={() => setShowEmotionTags(!showEmotionTags)}
@@ -349,10 +364,10 @@ export const PersonalNotes: React.FC = () => {
                 ))}
               </View>
             )}
-          </View>
+          </Card>
 
           {/* 컨텍스트 정보 */}
-          <View style={styles.contextInfo}>
+          <Card style={styles.contextInfo} variant="outlined">
             <View style={styles.contextCard}>
               <Text style={styles.contextIcon}>⏰</Text>
               <Text style={styles.contextText}>
@@ -362,18 +377,18 @@ export const PersonalNotes: React.FC = () => {
                 })}
               </Text>
             </View>
-          </View>
+          </Card>
         </ScrollView>
 
         {/* 하단 버튼 */}
         <View style={styles.footer}>
-          <TouchableOpacity
-            style={styles.nextButton}
+          <Button
+            title="완료"
             onPress={handleNext}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.nextButtonText}>다음</Text>
-          </TouchableOpacity>
+            variant="primary"
+            size="large"
+            fullWidth
+          />
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -388,6 +403,37 @@ const styles = StyleSheet.create({
   keyboardAvoid: {
     flex: 1,
   },
+  navHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    backgroundColor: colors.white,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.gray[100],
+  },
+  backButton: {
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  backButtonText: {
+    fontSize: 24,
+    color: colors.primary,
+    fontWeight: typography.fontWeight.medium as any,
+  },
+  navTitle: {
+    fontSize: typography.fontSize.lg,
+    fontWeight: typography.fontWeight.semibold as any,
+    color: colors.text.primary,
+    flex: 1,
+    textAlign: 'center',
+  },
+  navSpacer: {
+    width: 44,
+    height: 44,
+  },
   scrollContent: {
     paddingBottom: spacing.xl,
   },
@@ -397,50 +443,42 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.lg,
   },
   progressBar: {
-    height: 4,
-    backgroundColor: colors.gray200,
-    borderRadius: 2,
     marginBottom: spacing.lg,
   },
-  progressFill: {
-    height: '100%',
-    backgroundColor: colors.primary,
-    borderRadius: 2,
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold as any,
-    color: colors.text,
+    color: colors.text.primary,
   },
   guideSection: {
-    paddingHorizontal: spacing.lg,
+    marginHorizontal: spacing.lg,
     marginBottom: spacing.xl,
+    padding: spacing.lg,
   },
   guideTitle: {
     fontSize: typography.fontSize.md,
-    color: colors.text,
+    color: colors.text.primary,
     marginBottom: spacing.xs,
   },
   guideSubtitle: {
     fontSize: typography.fontSize.sm,
-    color: colors.gray600,
+    color: colors.gray[600],
   },
   inputSection: {
-    paddingHorizontal: spacing.lg,
+    marginHorizontal: spacing.lg,
     marginBottom: spacing.xl,
-  },
-  textAreaContainer: {
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.gray200,
-    padding: spacing.md,
+    padding: spacing.lg,
   },
   textArea: {
     minHeight: 120,
     maxHeight: 200,
     fontSize: typography.fontSize.md,
-    color: colors.text,
+    color: colors.text.primary,
     lineHeight: 24,
   },
   textAreaError: {
@@ -453,22 +491,19 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     paddingTop: spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: colors.gray100,
+    borderTopColor: colors.gray[100],
   },
   characterCount: {
     fontSize: typography.fontSize.sm,
-    color: colors.gray600,
+    color: colors.gray[600],
   },
   characterCountError: {
     color: colors.error,
   },
-  autoSaveText: {
-    fontSize: typography.fontSize.xs,
-    color: colors.gray500,
-  },
   quickToolsSection: {
-    paddingHorizontal: spacing.lg,
+    marginHorizontal: spacing.lg,
     marginBottom: spacing.xl,
+    padding: spacing.lg,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -479,41 +514,24 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: typography.fontSize.md,
     fontWeight: typography.fontWeight.semibold as any,
-    color: colors.text,
+    color: colors.text.primary,
   },
   toggleIcon: {
     fontSize: typography.fontSize.sm,
-    color: colors.gray600,
+    color: colors.gray[600],
   },
   expressionGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginHorizontal: -spacing.xs / 2,
+    gap: spacing.xs,
   },
   expressionChip: {
-    backgroundColor: colors.gray100,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: 20,
-    margin: spacing.xs / 2,
-    borderWidth: 1,
-    borderColor: colors.gray200,
-  },
-  expressionChipSelected: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  expressionText: {
-    fontSize: typography.fontSize.sm,
-    color: colors.gray700,
-  },
-  expressionTextSelected: {
-    color: colors.white,
-    fontWeight: typography.fontWeight.medium as any,
+    marginBottom: spacing.xs,
   },
   emotionSection: {
-    paddingHorizontal: spacing.lg,
+    marginHorizontal: spacing.lg,
     marginBottom: spacing.xl,
+    padding: spacing.lg,
   },
   emotionGrid: {
     flexDirection: 'row',
@@ -521,14 +539,14 @@ const styles = StyleSheet.create({
     marginHorizontal: -spacing.xs / 2,
   },
   emotionTag: {
-    width: (SCREEN_WIDTH - spacing.lg * 2 - spacing.xs * 5) / 3,
-    backgroundColor: colors.gray50,
+    width: (SCREEN_WIDTH - spacing.lg * 2 - spacing.lg * 2 - spacing.xs * 2) / 3,
+    backgroundColor: colors.gray[50],
     borderRadius: 12,
     padding: spacing.sm,
     margin: spacing.xs / 2,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: colors.gray200,
+    borderColor: colors.gray[200],
   },
   emotionTagSelected: {
     backgroundColor: colors.primaryLight,
@@ -541,24 +559,20 @@ const styles = StyleSheet.create({
   },
   emotionLabel: {
     fontSize: typography.fontSize.xs,
-    color: colors.gray700,
+    color: colors.gray[700],
   },
   emotionLabelSelected: {
     color: colors.primary,
     fontWeight: typography.fontWeight.medium as any,
   },
   contextInfo: {
-    paddingHorizontal: spacing.lg,
+    marginHorizontal: spacing.lg,
     marginBottom: spacing.xl,
+    padding: spacing.lg,
   },
   contextCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.gray50,
-    padding: spacing.md,
-    borderRadius: 8,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.primary,
   },
   contextIcon: {
     fontSize: typography.fontSize.md,
@@ -566,25 +580,14 @@ const styles = StyleSheet.create({
   },
   contextText: {
     fontSize: typography.fontSize.sm,
-    color: colors.gray700,
+    color: colors.gray[700],
   },
   footer: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     backgroundColor: colors.white,
     borderTopWidth: 1,
-    borderTopColor: colors.gray100,
-  },
-  nextButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.md,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  nextButtonText: {
-    color: colors.white,
-    fontSize: typography.fontSize.md,
-    fontWeight: typography.fontWeight.semibold as any,
+    borderTopColor: colors.gray[100],
   },
 });
 

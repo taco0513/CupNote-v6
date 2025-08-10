@@ -2,7 +2,7 @@
  * Home Screen with Polished UI
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -10,17 +10,63 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Button, Card, Badge, Avatar } from '../components/common';
 import { colors, typography, spacing, borderRadius, shadows } from '../styles/theme';
 import useStore from '../store/useStore';
+import draftManager, { DraftMetadata } from '../utils/draftManager';
 
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
-  const { user, stats, records } = useStore();
+  const { user, stats, records, setTastingFlowData } = useStore();
+  const [draftMetadata, setDraftMetadata] = useState<DraftMetadata | null>(null);
   
   const recentRecords = records.slice(0, 3);
+  
+  // Check for draft on mount
+  useEffect(() => {
+    checkForDraft();
+  }, []);
+  
+  const checkForDraft = async () => {
+    const metadata = await draftManager.getMetadata();
+    if (metadata.exists) {
+      setDraftMetadata(metadata);
+    }
+  };
+  
+  const handleContinueDraft = async () => {
+    if (!draftMetadata) return;
+    
+    const currentStep = await draftManager.loadDraftToStore(setTastingFlowData);
+    if (currentStep) {
+      // Navigate to the saved step
+      navigation.navigate('TastingFlow', { 
+        screen: currentStep,
+        params: { mode: 'cafe' } // This will be overridden by draft data
+      });
+    }
+  };
+  
+  const handleDeleteDraft = () => {
+    Alert.alert(
+      '임시 저장 삭제',
+      '저장된 기록을 삭제하시겠습니까?',
+      [
+        { text: '취소', style: 'cancel' },
+        { 
+          text: '삭제', 
+          style: 'destructive',
+          onPress: async () => {
+            await draftManager.clearDraft();
+            setDraftMetadata(null);
+          }
+        }
+      ]
+    );
+  };
   
   // Get best coffee of current month
   const bestCoffeeThisMonth = React.useMemo(() => {
@@ -81,21 +127,62 @@ export default function HomeScreen() {
           </Card>
         </View>
         
+        {/* Draft Continue Card */}
+        {draftMetadata && draftMetadata.exists && (
+          <Card variant="elevated" style={[styles.ctaCard, styles.draftCard]}>
+            <View style={styles.draftHeader}>
+              <Text style={styles.draftEmoji}>📝</Text>
+              <TouchableOpacity onPress={handleDeleteDraft} style={styles.draftDeleteButton}>
+                <Text style={styles.draftDeleteText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.draftTitle}>이어서 기록하기</Text>
+            <Text style={styles.draftSubtitle}>
+              {draftMetadata.coffeeName || '커피 기록'} - {draftMetadata.completionPercentage}% 완료
+            </Text>
+            <Text style={styles.draftTime}>
+              {new Date(draftMetadata.lastSavedAt).toLocaleString('ko-KR', {
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}에 저장됨
+            </Text>
+            <View style={styles.draftButtons}>
+              <Button
+                title="이어하기"
+                onPress={handleContinueDraft}
+                size="medium"
+                style={styles.continueButton}
+              />
+              <Button
+                title="새로 시작"
+                onPress={() => navigation.navigate('TastingFlow')}
+                variant="secondary"
+                size="medium"
+                style={styles.newButton}
+              />
+            </View>
+          </Card>
+        )}
+
         {/* Main CTA */}
-        <Card variant="elevated" style={styles.ctaCard}>
-          <Text style={styles.ctaEmoji}>☕</Text>
-          <Text style={styles.ctaTitle}>오늘의 커피를 기록해보세요</Text>
-          <Text style={styles.ctaSubtitle}>
-            당신만의 특별한 커피 이야기를 남겨보세요
-          </Text>
-          <Button
-            title="커피 기록하기"
-            onPress={() => navigation.navigate('TastingFlow')}
-            size="large"
-            icon="☕"
-            style={styles.ctaButton}
-          />
-        </Card>
+        {!draftMetadata?.exists && (
+          <Card variant="elevated" style={styles.ctaCard}>
+            <Text style={styles.ctaEmoji}>☕</Text>
+            <Text style={styles.ctaTitle}>오늘의 커피를 기록해보세요</Text>
+            <Text style={styles.ctaSubtitle}>
+              당신만의 특별한 커피 이야기를 남겨보세요
+            </Text>
+            <Button
+              title="커피 기록하기"
+              onPress={() => navigation.navigate('TastingFlow')}
+              size="large"
+              icon="☕"
+              style={styles.ctaButton}
+            />
+          </Card>
+        )}
         
         {/* Best Coffee This Month */}
         <View style={styles.section}>
@@ -473,5 +560,53 @@ const styles = StyleSheet.create({
   recentRecordDate: {
     fontSize: typography.fontSize.xs,
     color: colors.text.tertiary,
+  },
+  // Draft styles
+  draftCard: {
+    backgroundColor: colors.primaryLight,
+    borderColor: colors.primary,
+    borderWidth: 1,
+  },
+  draftHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: spacing.sm,
+  },
+  draftEmoji: {
+    fontSize: 32,
+  },
+  draftDeleteButton: {
+    padding: spacing.xs,
+  },
+  draftDeleteText: {
+    fontSize: typography.fontSize.lg,
+    color: colors.text.secondary,
+  },
+  draftTitle: {
+    fontSize: typography.fontSize.lg,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+    marginBottom: spacing.xs,
+  },
+  draftSubtitle: {
+    fontSize: typography.fontSize.md,
+    color: colors.text.secondary,
+    marginBottom: spacing.xs,
+  },
+  draftTime: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.tertiary,
+    marginBottom: spacing.md,
+  },
+  draftButtons: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  continueButton: {
+    flex: 1,
+  },
+  newButton: {
+    flex: 1,
   },
 });

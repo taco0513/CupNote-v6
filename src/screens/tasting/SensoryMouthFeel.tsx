@@ -10,8 +10,8 @@ import {
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Slider from '@react-native-community/slider';
 import { colors, spacing, typography } from '../../styles/theme';
+import { Card, Button, ProgressBar, Badge, Slider } from '../../components/common';
 import useStore from '../../store/useStore';
 import type { TastingFlowNavigationProp, TastingFlowRouteProp } from '../../types/navigation';
 
@@ -160,36 +160,41 @@ export const SensoryMouthFeel: React.FC = () => {
   const renderSliderItem = (key: keyof typeof scores) => {
     const item = EVALUATION_ITEMS[key];
     const value = scores[key];
+    
+    // Safe value display for Badge
+    const safeValue = typeof value === 'number' && !isNaN(value) ? value : 3;
+    const displayValue = safeValue.toString();
 
     return (
-      <View key={key} style={styles.sliderContainer}>
+      <Card key={key} style={styles.sliderContainer}>
         <View style={styles.sliderHeader}>
           <View style={styles.sliderTitle}>
             <Text style={styles.sliderEmoji}>{item.emoji}</Text>
             <Text style={styles.sliderName}>{item.name}</Text>
           </View>
-          <Text style={[styles.sliderValue, { color: item.color }]}>{value}</Text>
-        </View>
-
-        <View style={styles.sliderContent}>
-          <Slider
-            style={styles.slider}
-            value={value}
-            onValueChange={(val) => handleScoreChange(key, val)}
-            minimumValue={1}
-            maximumValue={5}
-            step={1}
-            minimumTrackTintColor={item.color}
-            maximumTrackTintColor={colors.gray300}
-            thumbTintColor={item.color}
+          <Badge 
+            text={displayValue} 
+            variant={item.color === colors.primary ? 'primary' : 'default'}
           />
-          
-          <View style={styles.sliderLabels}>
-            <Text style={styles.sliderLabelMin}>약함</Text>
-            <Text style={styles.sliderLabelMax}>강함</Text>
-          </View>
         </View>
-      </View>
+        <Text style={styles.sliderDescription}>{item.description}</Text>
+        <Slider
+          value={safeValue}
+          onValueChange={(val) => handleScoreChange(key, val)}
+          min={1}
+          max={5}
+          step={1}
+          color={item.color}
+          style={styles.slider}
+        />
+        <View style={styles.sliderLabels}>
+          <Text style={styles.sliderLabelMin}>약함</Text>
+          <Text style={styles.sliderLabelCurrent}>
+            {item.labels[safeValue] || item.labels[3]}
+          </Text>
+          <Text style={styles.sliderLabelMax}>강함</Text>
+        </View>
+      </Card>
     );
   };
 
@@ -201,26 +206,24 @@ export const SensoryMouthFeel: React.FC = () => {
       >
         {/* 헤더 */}
         <View style={styles.header}>
-          <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: '85%' }]} />
-          </View>
+          <ProgressBar 
+            progress={route.params.mode === 'cafe' ? 0.83 : 0.86} 
+            style={styles.progressBar} 
+          />
           <View style={styles.headerContent}>
             <Text style={styles.title}>수치 평가</Text>
-            <TouchableOpacity
-              style={styles.skipButton}
-              onPress={handleSkip}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.skipButtonText}>건너뛰기</Text>
-            </TouchableOpacity>
+            <Badge 
+              text={route.params.mode === 'cafe' ? '☕ 카페 모드' : '🏠 홈카페 모드'}
+              variant={route.params.mode === 'cafe' ? 'primary' : 'info'}
+            />
           </View>
         </View>
 
         {/* 안내 메시지 */}
-        <View style={styles.guideSection}>
+        <Card style={styles.guideSection}>
           <Text style={styles.guideTitle}>☕ 커피의 마우스필을 평가해주세요</Text>
           <Text style={styles.guideSubtitle}>1점(약함) ~ 5점(강함)</Text>
-        </View>
+        </Card>
 
         {/* 슬라이더 섹션 */}
         <View style={styles.slidersSection}>
@@ -230,13 +233,22 @@ export const SensoryMouthFeel: React.FC = () => {
 
       {/* 하단 버튼 */}
       <View style={styles.footer}>
-        <TouchableOpacity
-          style={styles.nextButton}
-          onPress={handleNext}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.nextButtonText}>다음</Text>
-        </TouchableOpacity>
+        <View style={styles.footerButtons}>
+          <Button
+            title="건너뛰기"
+            onPress={handleSkip}
+            variant="secondary"
+            size="medium"
+            style={styles.skipFooterButton}
+          />
+          <Button
+            title="다음"
+            onPress={handleNext}
+            variant="primary"
+            size="large"
+            style={styles.nextFooterButton}
+          />
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -256,15 +268,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.lg,
   },
   progressBar: {
-    height: 4,
-    backgroundColor: colors.gray200,
-    borderRadius: 2,
     marginBottom: spacing.lg,
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: colors.primary,
-    borderRadius: 2,
   },
   headerContent: {
     flexDirection: 'row',
@@ -274,48 +278,36 @@ const styles = StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold as any,
-    color: colors.text,
-  },
-  skipButton: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    backgroundColor: colors.gray200,
-    borderRadius: 8,
-  },
-  skipButtonText: {
-    fontSize: typography.fontSize.sm,
-    color: colors.gray700,
-    fontWeight: typography.fontWeight.medium as any,
+    color: colors.text.primary,
   },
   guideSection: {
-    paddingHorizontal: spacing.lg,
+    marginHorizontal: spacing.lg,
     marginBottom: spacing.xl,
+    padding: spacing.lg,
   },
   guideTitle: {
     fontSize: typography.fontSize.lg,
     fontWeight: typography.fontWeight.semibold as any,
-    color: colors.text,
+    color: colors.text.primary,
     marginBottom: spacing.xs,
   },
   guideSubtitle: {
     fontSize: typography.fontSize.sm,
-    color: colors.gray600,
+    color: colors.gray[600],
   },
   slidersSection: {
     paddingHorizontal: spacing.lg,
     gap: spacing.lg,
   },
   sliderContainer: {
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    padding: spacing.md,
     marginBottom: spacing.md,
+    padding: spacing.lg,
   },
   sliderHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.md,
+    marginBottom: spacing.xs,
   },
   sliderTitle: {
     flexDirection: 'row',
@@ -328,14 +320,15 @@ const styles = StyleSheet.create({
   sliderName: {
     fontSize: typography.fontSize.md,
     fontWeight: typography.fontWeight.medium as any,
-    color: colors.text,
+    color: colors.text.primary,
   },
-  sliderContent: {
-    marginBottom: spacing.xs,
+  sliderDescription: {
+    fontSize: typography.fontSize.sm,
+    color: colors.gray[600],
+    marginBottom: spacing.md,
   },
   slider: {
-    width: '100%',
-    height: 40,
+    marginBottom: spacing.sm,
   },
   sliderLabels: {
     flexDirection: 'row',
@@ -345,33 +338,39 @@ const styles = StyleSheet.create({
   },
   sliderLabelMin: {
     fontSize: typography.fontSize.xs,
-    color: colors.gray500,
+    color: colors.gray[500],
+    flex: 1,
+    textAlign: 'left',
   },
-  sliderValue: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.bold as any,
+  sliderLabelCurrent: {
+    fontSize: typography.fontSize.xs,
+    color: colors.gray[700],
+    fontWeight: typography.fontWeight.medium as any,
+    flex: 2,
+    textAlign: 'center',
   },
   sliderLabelMax: {
     fontSize: typography.fontSize.xs,
-    color: colors.gray500,
+    color: colors.gray[500],
+    flex: 1,
+    textAlign: 'right',
   },
   footer: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     backgroundColor: colors.white,
     borderTopWidth: 1,
-    borderTopColor: colors.gray100,
+    borderTopColor: colors.gray[100],
   },
-  nextButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.md,
-    borderRadius: 12,
-    alignItems: 'center',
+  footerButtons: {
+    flexDirection: 'row',
+    gap: spacing.sm,
   },
-  nextButtonText: {
-    color: colors.white,
-    fontSize: typography.fontSize.md,
-    fontWeight: typography.fontWeight.semibold as any,
+  skipFooterButton: {
+    flex: 1,
+  },
+  nextFooterButton: {
+    flex: 2,
   },
 });
 

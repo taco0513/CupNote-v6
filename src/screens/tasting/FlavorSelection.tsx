@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,9 +8,11 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { colors, spacing, typography } from '../../styles/theme';
+import { colors, spacing, typography, borderRadius } from '../../styles/theme';
+import { Card, Button, ProgressBar, Badge, Chip, Input } from '../../components/common';
 import useStore from '../../store/useStore';
 import type { TastingFlowNavigationProp, TastingFlowRouteProp } from '../../types/navigation';
+import draftManager from '../../utils/draftManager';
 
 // SCA Flavor Wheel 완전판 데이터 구조
 interface FlavorItem {
@@ -287,16 +289,44 @@ export const FlavorSelection: React.FC = () => {
     }, 0);
   }, [selectedFlavors]);
 
+  // Auto-save effect
+  useEffect(() => {
+    const saveTimer = setTimeout(() => {
+      if (selectedFlavors.length > 0) {
+        const flavorStrings: string[] = [];
+        selectedFlavors.forEach(flavor => {
+          if (flavor.level3 && flavor.level3.length > 0) {
+            flavor.level3.forEach(l3 => flavorStrings.push(l3));
+          } else {
+            flavorStrings.push(flavor.level2);
+          }
+        });
+        
+        draftManager.saveDraft({
+          currentStep: 'FlavorSelection',
+          mode,
+          flavors: flavorStrings,
+        });
+      }
+    }, 2000); // Save after 2 seconds of inactivity
+
+    return () => clearTimeout(saveTimer);
+  }, [selectedFlavors, mode]);
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backButton}>← 뒤로</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>향미 선택</Text>
-        <Text style={styles.stepIndicator}>
-          {mode === 'cafe' ? '3/7' : '4/8'}
-        </Text>
+        <ProgressBar 
+          progress={mode === 'cafe' ? 0.43 : 0.5} 
+          style={styles.progressBar} 
+        />
+        <View style={styles.headerContent}>
+          <Text style={styles.headerTitle}>향미 선택</Text>
+          <Badge 
+            text={mode === 'cafe' ? '☕ 카페 모드' : '🏠 홈카페 모드'}
+            variant={mode === 'cafe' ? 'primary' : 'info'}
+          />
+        </View>
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
@@ -307,7 +337,7 @@ export const FlavorSelection: React.FC = () => {
           </Text>
 
           {/* 선택된 향미 프리뷰 - 상단 이동 */}
-          <View style={styles.selectedPreview}>
+          <Card style={styles.selectedPreview}>
             <Text style={styles.selectedPreviewTitle}>선택된 향미 ({selectedCount}개)</Text>
             {selectedCount > 0 ? (
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -315,15 +345,23 @@ export const FlavorSelection: React.FC = () => {
                   {selectedFlavors.map((flavor, index) => {
                     if (flavor.level3) {
                       return flavor.level3.map(l3 => (
-                        <View key={`${index}-${l3}`} style={styles.selectedChip}>
-                          <Text style={styles.selectedChipText}>{l3}</Text>
-                        </View>
+                        <Chip 
+                          key={`${index}-${l3}`}
+                          label={l3}
+                          selected
+                          color={colors.primary}
+                          style={styles.selectedChip}
+                        />
                       ));
                     }
                     return (
-                      <View key={index} style={styles.selectedChip}>
-                        <Text style={styles.selectedChipText}>{flavor.level2}</Text>
-                      </View>
+                      <Chip 
+                        key={index}
+                        label={flavor.level2}
+                        selected
+                        color={colors.primary}
+                        style={styles.selectedChip}
+                      />
                     );
                   })}
                 </View>
@@ -334,10 +372,10 @@ export const FlavorSelection: React.FC = () => {
                 <Text style={styles.emptyStateSubtext}>아래 카테고리에서 향미를 선택해주세요</Text>
               </View>
             )}
-          </View>
+          </Card>
 
           {/* 카테고리별 향미 선택 */}
-          <View style={styles.categoriesSection}>
+          <Card style={styles.categoriesSection}>
             <Text style={styles.sectionTitle}>📂 카테고리별 선택</Text>
               
               {Object.entries(flavorsByCategory).map(([level1, level2Groups]) => (
@@ -389,21 +427,13 @@ export const FlavorSelection: React.FC = () => {
                               <Text style={styles.level3Label}>구체적으로:</Text>
                               <View style={styles.level3Options}>
                                 {level3Items.map(item => (
-                                  <TouchableOpacity
+                                  <Chip
                                     key={item.id}
-                                    style={[
-                                      styles.level3Chip,
-                                      isLevel3Selected(level1, level2, item.level3!) && styles.level3ChipSelected
-                                    ]}
+                                    label={item.nameKo}
+                                    selected={isLevel3Selected(level1, level2, item.level3!)}
                                     onPress={() => handleLevel3Select(level1, level2, item.level3!)}
-                                  >
-                                    <Text style={[
-                                      styles.level3ChipText,
-                                      isLevel3Selected(level1, level2, item.level3!) && styles.level3ChipTextSelected
-                                    ]}>
-                                      {item.nameKo}
-                                    </Text>
-                                  </TouchableOpacity>
+                                    style={styles.level3Chip}
+                                  />
                                 ))}
                               </View>
                             </View>
@@ -414,21 +444,20 @@ export const FlavorSelection: React.FC = () => {
                   )}
                 </View>
               ))}
-          </View>
+          </Card>
         </View>
       </ScrollView>
 
       {/* 하단 버튼 */}
       <View style={styles.bottomActions}>
-        <TouchableOpacity
-          style={[styles.button, styles.primaryButton]}
+        <Button
+          title={selectedCount > 0 ? '다음' : '향미를 선택해주세요'}
           onPress={handleNext}
           disabled={selectedCount === 0}
-        >
-          <Text style={styles.primaryButtonText}>
-            {selectedCount > 0 ? '다음' : '향미를 선택해주세요'}
-          </Text>
-        </TouchableOpacity>
+          variant="primary"
+          size="large"
+          fullWidth
+        />
       </View>
     </SafeAreaView>
   );
@@ -440,13 +469,17 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   header: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.lg,
+  },
+  progressBar: {
+    marginBottom: spacing.lg,
+  },
+  headerContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray200,
   },
   backButton: {
     fontSize: typography.fontSize.md,
@@ -455,11 +488,11 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: typography.fontSize.lg,
     fontWeight: typography.fontWeight.semibold as any,
-    color: colors.text,
+    color: colors.text.primary,
   },
   stepIndicator: {
     fontSize: typography.fontSize.sm,
-    color: colors.gray500,
+    color: colors.gray[500],
   },
   scrollView: {
     flex: 1,
@@ -470,18 +503,18 @@ const styles = StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold as any,
-    color: colors.text,
+    color: colors.text.primary,
     marginBottom: spacing.xs,
   },
   subtitle: {
     fontSize: typography.fontSize.md,
-    color: colors.gray600,
+    color: colors.gray[600],
     marginBottom: spacing.lg,
   },
   sectionTitle: {
     fontSize: typography.fontSize.md,
     fontWeight: typography.fontWeight.semibold as any,
-    color: colors.text,
+    color: colors.text.primary,
     marginBottom: spacing.md,
   },
   categoriesSection: {
@@ -493,7 +526,7 @@ const styles = StyleSheet.create({
   categoryHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.gray100,
+    backgroundColor: colors.gray[100],
     padding: spacing.md,
     borderRadius: 12,
   },
@@ -505,11 +538,11 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: typography.fontSize.md,
     fontWeight: typography.fontWeight.medium as any,
-    color: colors.text,
+    color: colors.text.primary,
   },
   expandIcon: {
     fontSize: 12,
-    color: colors.gray500,
+    color: colors.gray[500],
   },
   level2Container: {
     paddingLeft: spacing.lg,
@@ -532,17 +565,17 @@ const styles = StyleSheet.create({
   checkboxIcon: {
     fontSize: 18,
     marginRight: spacing.sm,
-    color: colors.gray500,
+    color: colors.gray[500],
   },
   checkboxIconSelected: {
     color: colors.primary,
   },
   level2Text: {
     fontSize: typography.fontSize.md,
-    color: colors.text,
+    color: colors.text.primary,
   },
   level2TextDisabled: {
-    color: colors.gray400,
+    color: colors.gray[500],
   },
   level3Container: {
     marginTop: spacing.sm,
@@ -550,7 +583,7 @@ const styles = StyleSheet.create({
   },
   level3Label: {
     fontSize: typography.fontSize.xs,
-    color: colors.gray500,
+    color: colors.gray[500],
     marginBottom: spacing.xs,
   },
   level3Options: {
@@ -564,7 +597,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     margin: spacing.xs,
     borderWidth: 1,
-    borderColor: colors.gray200,
+    borderColor: colors.gray[200],
   },
   level3ChipSelected: {
     backgroundColor: colors.primary,
@@ -572,7 +605,7 @@ const styles = StyleSheet.create({
   },
   level3ChipText: {
     fontSize: typography.fontSize.xs,
-    color: colors.gray700,
+    color: colors.gray[700],
   },
   level3ChipTextSelected: {
     color: colors.white,
@@ -580,9 +613,7 @@ const styles = StyleSheet.create({
   selectedPreview: {
     marginTop: spacing.md,
     marginBottom: spacing.lg,
-    padding: spacing.md,
-    backgroundColor: colors.primaryLight,
-    borderRadius: 12,
+    padding: spacing.lg,
   },
   selectedPreviewTitle: {
     fontSize: typography.fontSize.sm,
@@ -610,18 +641,18 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: typography.fontSize.md,
-    color: colors.gray500,
+    color: colors.gray[500],
     marginBottom: spacing.xs,
   },
   emptyStateSubtext: {
     fontSize: typography.fontSize.sm,
-    color: colors.gray400,
+    color: colors.gray[500],
   },
   bottomActions: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: colors.gray200,
+    borderTopColor: colors.gray[200],
     backgroundColor: colors.white,
   },
   button: {

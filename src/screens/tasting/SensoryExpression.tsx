@@ -5,11 +5,12 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   Animated,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { colors, spacing, typography } from '../../styles/theme';
+import { Card, Button, ProgressBar, Badge, Chip } from '../../components/common';
 import useStore from '../../store/useStore';
 import type { TastingFlowNavigationProp, TastingFlowRouteProp } from '../../types/navigation';
 
@@ -270,29 +271,31 @@ export const SensoryExpression: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backButton}>← 뒤로</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>감각 표현</Text>
-        <Text style={styles.stepIndicator}>
-          {mode === 'cafe' ? '4/6' : '5/7'} (75%)
-        </Text>
-      </View>
-
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
-          {/* 안내 메시지 */}
-          <Text style={styles.title}>💬 느껴지는 감각을 자유롭게 선택해주세요</Text>
-          <Text style={styles.subtitle}>각 카테고리에서 최대 3개까지 선택 가능</Text>
+          {/* Header */}
+          <View style={styles.header}>
+            <ProgressBar 
+              progress={mode === 'cafe' ? 0.67 : 0.71} 
+              style={styles.progressBar} 
+            />
+            <View style={styles.headerContent}>
+              <Text style={styles.title}>감각 표현</Text>
+              <Badge 
+                text={mode === 'cafe' ? '☕ 카페 모드' : '🏠 홈카페 모드'}
+                variant={mode === 'cafe' ? 'primary' : 'info'}
+              />
+            </View>
+            <Text style={styles.subtitle}>💬 느껴지는 감각을 자유롭게 선택해주세요</Text>
+            <Text style={styles.hint}>각 카테고리에서 최대 3개까지 선택 가능</Text>
+          </View>
 
           {/* 선택 현황 요약 */}
-          <View style={styles.selectionSummary}>
+          <Card style={styles.selectionSummary} variant="outlined">
             <Text style={styles.summaryText}>
-              총 {selectionStats.total}개 선택됨 ({selectionStats.categoriesUsed}개 카테고리 중 {Object.keys(CATEGORY_META).length}개 사용)
+              총 {selectionStats.total}개 선택됨 ({selectionStats.categoriesUsed}/{Object.keys(CATEGORY_META).length} 카테고리)
             </Text>
-          </View>
+          </Card>
 
           {/* 선택된 표현 요약 (가로 스크롤) */}
           {selectionStats.total > 0 && (
@@ -303,12 +306,13 @@ export const SensoryExpression: React.FC = () => {
                     const expression = KOREAN_EXPRESSIONS_DATABASE.find(e => e.id === id);
                     const categoryMeta = CATEGORY_META[category as SensoryCategory];
                     return (
-                      <View 
-                        key={id} 
-                        style={[styles.selectedChip, { backgroundColor: categoryMeta.color.primary }]}
-                      >
-                        <Text style={styles.selectedChipText}>{expression?.korean_text}</Text>
-                      </View>
+                      <Chip
+                        key={id}
+                        label={expression?.korean_text || ''}
+                        selected
+                        color={categoryMeta.color.primary}
+                        style={styles.selectedChip}
+                      />
                     );
                   })
                 )}
@@ -326,7 +330,7 @@ export const SensoryExpression: React.FC = () => {
               const maxReached = selectedCount >= 3;
 
               return (
-                <View key={category} style={styles.categorySection}>
+                <Card key={category} style={styles.categorySection}>
                   {/* 카테고리 헤더 */}
                   <TouchableOpacity
                     style={[styles.categoryHeader, { backgroundColor: meta.color.background }]}
@@ -338,11 +342,13 @@ export const SensoryExpression: React.FC = () => {
                       <Text style={[styles.categoryName, { color: meta.color.primary }]}>
                         {meta.name}
                       </Text>
+                      <Badge 
+                        text={`${selectedCount}/3`}
+                        variant="default"
+                        size="small"
+                      />
                     </View>
                     <View style={styles.categoryHeaderRight}>
-                      <Text style={[styles.categoryCount, { color: meta.color.primary }]}>
-                        {selectedCount}/3
-                      </Text>
                       <Text style={[styles.expandIcon, { color: meta.color.primary }]}>
                         {isExpanded ? '▼' : '▶'}
                       </Text>
@@ -357,33 +363,20 @@ export const SensoryExpression: React.FC = () => {
                         const isDisabled = maxReached && !isSelected;
 
                         return (
-                          <TouchableOpacity
+                          <Chip
                             key={expression.id}
-                            style={[
-                              styles.expressionButton,
-                              isSelected && [styles.expressionButtonSelected, { 
-                                backgroundColor: meta.color.primary,
-                                borderColor: meta.color.primary 
-                              }],
-                              isDisabled && styles.expressionButtonDisabled
-                            ]}
+                            label={expression.korean_text}
+                            selected={isSelected}
                             onPress={() => toggleExpression(category, expression.id)}
                             disabled={isDisabled}
-                            activeOpacity={0.7}
-                          >
-                            <Text style={[
-                              styles.expressionButtonText,
-                              isSelected && styles.expressionButtonTextSelected,
-                              isDisabled && styles.expressionButtonTextDisabled
-                            ]}>
-                              {expression.korean_text}
-                            </Text>
-                          </TouchableOpacity>
+                            color={isSelected ? meta.color.primary : undefined}
+                            style={styles.expressionChip}
+                          />
                         );
                       })}
                     </View>
                   )}
-                </View>
+                </Card>
               );
             })}
           </View>
@@ -392,15 +385,13 @@ export const SensoryExpression: React.FC = () => {
 
       {/* 하단 버튼 */}
       <View style={styles.footer}>
-        <TouchableOpacity
-          style={[styles.nextButton, selectionStats.total === 0 && styles.nextButtonDisabled]}
+        <Button
+          title={selectionStats.total === 0 ? '건너뛰기' : '다음'}
           onPress={handleNext}
-          activeOpacity={0.8}
-        >
-          <Text style={[styles.nextButtonText, selectionStats.total === 0 && styles.nextButtonTextDisabled]}>
-            {selectionStats.total === 0 ? '자유 선택 (건너뛰기 가능)' : '다음'}
-          </Text>
-        </TouchableOpacity>
+          variant={selectionStats.total === 0 ? 'secondary' : 'primary'}
+          size="large"
+          fullWidth
+        />
       </View>
     </SafeAreaView>
   );
@@ -411,50 +402,45 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray200,
-  },
-  backButton: {
-    fontSize: typography.fontSize.md,
-    color: colors.primary,
-  },
-  headerTitle: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.semibold as any,
-    color: colors.text,
-  },
-  stepIndicator: {
-    fontSize: typography.fontSize.sm,
-    color: colors.gray500,
-  },
   scrollView: {
     flex: 1,
   },
   content: {
-    padding: spacing.lg,
+    paddingBottom: spacing.xxl,
+  },
+  header: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.lg,
+  },
+  progressBar: {
+    marginBottom: spacing.lg,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
   },
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold as any,
-    color: colors.text,
-    marginBottom: spacing.xs,
+    color: colors.text.primary,
   },
   subtitle: {
     fontSize: typography.fontSize.md,
-    color: colors.gray600,
+    color: colors.text.primary,
+    marginBottom: spacing.xs,
+  },
+  hint: {
+    fontSize: typography.fontSize.sm,
+    color: colors.gray[600],
     marginBottom: spacing.lg,
   },
   selectionSummary: {
-    padding: spacing.md,
-    backgroundColor: colors.primaryLight,
-    borderRadius: 8,
+    marginHorizontal: spacing.lg,
     marginBottom: spacing.md,
+    padding: spacing.md,
   },
   summaryText: {
     fontSize: typography.fontSize.sm,
@@ -468,24 +454,17 @@ const styles = StyleSheet.create({
   selectedExpressions: {
     flexDirection: 'row',
     paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
   },
   selectedChip: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: 20,
     marginRight: spacing.sm,
   },
-  selectedChipText: {
-    color: colors.white,
-    fontSize: typography.fontSize.sm,
-    fontWeight: typography.fontWeight.medium as any,
-  },
   categoriesContainer: {
+    paddingHorizontal: spacing.lg,
     gap: spacing.md,
   },
   categorySection: {
-    borderRadius: 12,
-    backgroundColor: colors.white,
+    marginBottom: spacing.md,
     overflow: 'hidden',
   },
   categoryHeader: {
@@ -493,28 +472,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: spacing.md,
-    borderRadius: 12,
   },
   categoryHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: spacing.sm,
   },
   categoryEmoji: {
     fontSize: 20,
-    marginRight: spacing.sm,
   },
   categoryName: {
     fontSize: typography.fontSize.md,
     fontWeight: typography.fontWeight.semibold as any,
+    marginRight: spacing.sm,
   },
   categoryHeaderRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
-  },
-  categoryCount: {
-    fontSize: typography.fontSize.sm,
-    fontWeight: typography.fontWeight.medium as any,
   },
   expandIcon: {
     fontSize: typography.fontSize.sm,
@@ -527,57 +501,15 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     gap: spacing.xs,
   },
-  expressionButton: {
-    backgroundColor: colors.white,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.gray300,
-    minWidth: '28%',
-    alignItems: 'center',
-  },
-  expressionButtonSelected: {
-    borderWidth: 2,
-  },
-  expressionButtonDisabled: {
-    backgroundColor: colors.gray100,
-    opacity: 0.5,
-  },
-  expressionButtonText: {
-    fontSize: typography.fontSize.sm,
-    color: colors.text,
-  },
-  expressionButtonTextSelected: {
-    color: colors.white,
-    fontWeight: typography.fontWeight.medium as any,
-  },
-  expressionButtonTextDisabled: {
-    color: colors.gray400,
+  expressionChip: {
+    marginBottom: spacing.xs,
   },
   footer: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: colors.gray200,
     backgroundColor: colors.white,
-  },
-  nextButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.md,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  nextButtonDisabled: {
-    backgroundColor: colors.gray300,
-  },
-  nextButtonText: {
-    color: colors.white,
-    fontSize: typography.fontSize.md,
-    fontWeight: typography.fontWeight.semibold as any,
-  },
-  nextButtonTextDisabled: {
-    color: colors.gray500,
+    borderTopWidth: 1,
+    borderTopColor: colors.gray[100],
   },
 });
 

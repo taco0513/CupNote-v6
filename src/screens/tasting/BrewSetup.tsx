@@ -13,7 +13,8 @@ import {
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { colors, spacing, typography } from '../../styles/theme';
+import { colors, spacing, typography, borderRadius } from '../../styles/theme';
+import { Card, Button, ProgressBar, SegmentedControl, Badge, Input, Stepper, Chip } from '../../components/common';
 import useStore from '../../store/useStore';
 import type { TastingFlowNavigationProp, TastingFlowRouteProp } from '../../types/navigation';
 
@@ -282,15 +283,18 @@ export const BrewSetup: React.FC = () => {
         >
           {/* 헤더 */}
           <View style={styles.header}>
-            <View style={styles.progressBar}>
-              <View style={[styles.progressFill, { width: '43%' }]} />
+            <ProgressBar progress={0.43} style={styles.progressBar} />
+            <View style={styles.headerContent}>
+              <Text style={styles.title}>브루잉 설정</Text>
+              <Badge 
+                text="🏠 홈카페 모드"
+                variant="info"
+              />
             </View>
-            <Text style={styles.title}>브루잉 설정</Text>
-            <Text style={styles.subtitle}>🏠 홈카페 모드</Text>
           </View>
 
           {/* 드리퍼 선택 */}
-          <View style={styles.section}>
+          <Card style={styles.section}>
             <Text style={styles.sectionTitle}>드리퍼 선택</Text>
             <View style={styles.dripperGrid}>
               {Object.values(PouroverDripper).map((dripper) => (
@@ -321,10 +325,10 @@ export const BrewSetup: React.FC = () => {
                 </TouchableOpacity>
               ))}
             </View>
-          </View>
+          </Card>
 
           {/* 레시피 설정 */}
-          <View style={styles.section}>
+          <Card style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>레시피 설정</Text>
               {savedRecipe && (
@@ -442,32 +446,26 @@ export const BrewSetup: React.FC = () => {
             )}
 
             {/* 물 온도 */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>물 온도 (°C)</Text>
-              <TextInput
-                style={styles.input}
-                value={waterTemp}
-                onChangeText={setWaterTemp}
-                keyboardType="numeric"
-                placeholder="92"
-                placeholderTextColor={colors.gray400}
-              />
-            </View>
+            <Input
+              label="물 온도 (°C)"
+              value={waterTemp}
+              onChangeText={setWaterTemp}
+              keyboardType="numeric"
+              placeholder="92"
+              variant="outlined"
+            />
 
             {/* 분쇄도 설정 */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>분쇄도 설정</Text>
-              <TextInput
-                style={styles.input}
-                value={grindSetting}
-                onChangeText={setGrindSetting}
-                placeholder="예: 코만단테, C40 MK4, 25 클릭"
-                placeholderTextColor={colors.gray400}
-              />
-            </View>
+            <Input
+              label="분쇄도 설정"
+              value={grindSetting}
+              onChangeText={setGrindSetting}
+              placeholder="예: 코만단테, C40 MK4, 25 클릭"
+              variant="outlined"
+            />
 
             {/* 추출 타이머 */}
-            <View style={styles.timerSection}>
+            <Card style={styles.timerSection} variant="outlined">
               <Text style={styles.inputLabel}>추출 타이머</Text>
               <View style={styles.timerDisplay}>
                 <Text style={styles.timerText}>{formatTime(currentTime)}</Text>
@@ -523,41 +521,38 @@ export const BrewSetup: React.FC = () => {
                   ))}
                 </View>
               )}
-            </View>
+            </Card>
 
             {/* 간단 메모 */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>간단 메모</Text>
-              <TextInput
-                style={styles.input}
-                value={quickNote}
-                onChangeText={setQuickNote}
-                placeholder="추출 과정 메모..."
-                placeholderTextColor={colors.gray400}
-                multiline
-              />
-            </View>
+            <Input
+              label="간단 메모"
+              value={quickNote}
+              onChangeText={setQuickNote}
+              placeholder="추출 과정 메모..."
+              multiline
+              variant="outlined"
+            />
 
             {/* 레시피 저장 */}
-            <TouchableOpacity
-              style={styles.saveButton}
+            <Button
+              title="💾 나의 커피로 저장"
               onPress={handleSaveRecipe}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.saveButtonText}>💾 나의 커피로 저장</Text>
-            </TouchableOpacity>
-          </View>
+              variant="secondary"
+              size="medium"
+              fullWidth
+            />
+          </Card>
         </ScrollView>
 
         {/* 하단 버튼 */}
         <View style={styles.footer}>
-          <TouchableOpacity
-            style={styles.nextButton}
+          <Button
+            title="다음"
             onPress={handleNext}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.nextButtonText}>다음</Text>
-          </TouchableOpacity>
+            variant="primary"
+            size="large"
+            fullWidth
+          />
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -581,29 +576,27 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.lg,
   },
   progressBar: {
-    height: 4,
-    backgroundColor: colors.gray200,
-    borderRadius: 2,
     marginBottom: spacing.lg,
   },
-  progressFill: {
-    height: '100%',
-    backgroundColor: colors.secondary,
-    borderRadius: 2,
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold as any,
-    color: colors.text,
+    color: colors.text.primary,
     marginBottom: spacing.xs,
   },
   subtitle: {
     fontSize: typography.fontSize.md,
-    color: colors.gray600,
+    color: colors.gray[600],
   },
   section: {
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.xl,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.lg,
+    padding: spacing.lg,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -614,7 +607,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: typography.fontSize.md,
     fontWeight: typography.fontWeight.semibold as any,
-    color: colors.text,
+    color: colors.text.primary,
   },
   loadButton: {
     paddingHorizontal: spacing.sm,
@@ -639,7 +632,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: colors.gray200,
+    borderColor: colors.gray[200],
   },
   dripperItemActive: {
     borderColor: colors.secondary,
@@ -654,7 +647,7 @@ const styles = StyleSheet.create({
   },
   dripperName: {
     fontSize: typography.fontSize.sm,
-    color: colors.gray700,
+    color: colors.gray[700],
     fontWeight: typography.fontWeight.medium as any,
   },
   dripperNameActive: {
@@ -663,7 +656,7 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: typography.fontSize.sm,
-    color: colors.gray700,
+    color: colors.gray[700],
     marginBottom: spacing.xs,
     fontWeight: typography.fontWeight.medium as any,
   },
@@ -680,7 +673,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: colors.gray300,
+    borderColor: colors.gray[300],
     alignItems: 'center',
   },
   ratioButtonActive: {
@@ -689,7 +682,7 @@ const styles = StyleSheet.create({
   },
   ratioButtonText: {
     fontSize: typography.fontSize.sm,
-    color: colors.gray700,
+    color: colors.gray[700],
     fontWeight: typography.fontWeight.medium as any,
   },
   ratioButtonTextActive: {
@@ -697,7 +690,7 @@ const styles = StyleSheet.create({
   },
   ratioDescription: {
     fontSize: typography.fontSize.xs,
-    color: colors.gray500,
+    color: colors.gray[500],
     marginTop: 2,
   },
   ratioDescriptionActive: {
@@ -716,19 +709,19 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.gray300,
+    borderColor: colors.gray[300],
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     fontSize: typography.fontSize.lg,
     fontWeight: typography.fontWeight.semibold as any,
-    color: colors.text,
+    color: colors.text.primary,
     textAlign: 'center',
   },
   waterAmountDisplay: {
-    backgroundColor: colors.gray50,
+    backgroundColor: colors.gray[50],
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.gray200,
+    borderColor: colors.gray[200],
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     alignItems: 'center',
@@ -740,7 +733,7 @@ const styles = StyleSheet.create({
   },
   waterAmountSubtext: {
     fontSize: typography.fontSize.xs,
-    color: colors.gray500,
+    color: colors.gray[500],
     marginTop: 2,
   },
   keypadTrigger: {
@@ -759,7 +752,7 @@ const styles = StyleSheet.create({
   },
   keypadHint: {
     fontSize: typography.fontSize.xs,
-    color: colors.gray500,
+    color: colors.gray[500],
     marginTop: 2,
   },
   keypadContainer: {
@@ -768,8 +761,8 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     marginVertical: spacing.md,
     borderWidth: 1,
-    borderColor: colors.gray200,
-    shadowColor: colors.gray800,
+    borderColor: colors.gray[200],
+    shadowColor: colors.gray[800],
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -781,7 +774,7 @@ const styles = StyleSheet.create({
   },
   keypadTitle: {
     fontSize: typography.fontSize.md,
-    color: colors.gray600,
+    color: colors.gray[600],
     marginBottom: spacing.sm,
   },
   keypadDisplay: {
@@ -801,11 +794,11 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: colors.gray50,
+    backgroundColor: colors.gray[50],
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: colors.gray200,
+    borderColor: colors.gray[200],
   },
   keypadButtonAction: {
     backgroundColor: colors.secondary,
@@ -814,7 +807,7 @@ const styles = StyleSheet.create({
   keypadButtonText: {
     fontSize: typography.fontSize.lg,
     fontWeight: typography.fontWeight.medium as any,
-    color: colors.gray700,
+    color: colors.gray[700],
   },
   keypadButtonActionText: {
     color: colors.white,
@@ -827,23 +820,10 @@ const styles = StyleSheet.create({
   },
   keypadCancelText: {
     fontSize: typography.fontSize.md,
-    color: colors.gray500,
-  },
-  inputContainer: {
-    marginBottom: spacing.md,
-  },
-  input: {
-    backgroundColor: colors.white,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.gray300,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    fontSize: typography.fontSize.md,
-    color: colors.text,
+    color: colors.gray[500],
   },
   timerSection: {
-    backgroundColor: colors.gray50,
+    backgroundColor: colors.gray[50],
     borderRadius: 12,
     padding: spacing.md,
     marginBottom: spacing.md,
@@ -855,11 +835,11 @@ const styles = StyleSheet.create({
   timerText: {
     fontSize: typography.fontSize.xxl,
     fontWeight: typography.fontWeight.bold as any,
-    color: colors.text,
+    color: colors.text.primary,
   },
   timerSubtext: {
     fontSize: typography.fontSize.sm,
-    color: colors.gray600,
+    color: colors.gray[600],
     marginTop: spacing.xs,
   },
   timerButtons: {
@@ -873,61 +853,38 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: colors.gray300,
+    borderColor: colors.gray[300],
   },
   timerButtonDisabled: {
     opacity: 0.5,
   },
   timerButtonText: {
     fontSize: typography.fontSize.sm,
-    color: colors.gray700,
+    color: colors.gray[700],
     fontWeight: typography.fontWeight.medium as any,
   },
   lapTimesContainer: {
     marginTop: spacing.md,
     paddingTop: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: colors.gray200,
+    borderTopColor: colors.gray[200],
   },
   lapTimesTitle: {
     fontSize: typography.fontSize.sm,
-    color: colors.gray600,
+    color: colors.gray[600],
     marginBottom: spacing.xs,
   },
   lapTime: {
     fontSize: typography.fontSize.sm,
-    color: colors.gray700,
+    color: colors.gray[700],
     marginBottom: 2,
-  },
-  saveButton: {
-    backgroundColor: colors.gray100,
-    paddingVertical: spacing.md,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: spacing.md,
-  },
-  saveButtonText: {
-    fontSize: typography.fontSize.md,
-    color: colors.gray700,
-    fontWeight: typography.fontWeight.medium as any,
   },
   footer: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     backgroundColor: colors.white,
     borderTopWidth: 1,
-    borderTopColor: colors.gray100,
-  },
-  nextButton: {
-    backgroundColor: colors.secondary,
-    paddingVertical: spacing.md,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  nextButtonText: {
-    color: colors.white,
-    fontSize: typography.fontSize.md,
-    fontWeight: typography.fontWeight.semibold as any,
+    borderTopColor: colors.gray[100],
   },
 });
 

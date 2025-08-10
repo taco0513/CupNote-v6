@@ -16,7 +16,8 @@ import {
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { colors, spacing, typography } from '../../styles/theme';
+import { colors, spacing, typography, borderRadius } from '../../styles/theme';
+import { Card, Button, ProgressBar, SegmentedControl, Badge } from '../../components/common';
 import useStore from '../../store/useStore';
 import type { TastingFlowNavigationProp, TastingFlowRouteProp } from '../../types/navigation';
 
@@ -134,7 +135,7 @@ const AutocompleteInput: React.FC<{
             setTimeout(() => setShowSuggestions(false), 200);
           }}
           placeholder={placeholder}
-          placeholderTextColor={colors.gray400}
+          placeholderTextColor={colors.gray[500]}
           editable={!disabled}
         />
         {loading && <ActivityIndicator size="small" color={colors.primary} />}
@@ -338,23 +339,18 @@ export const CoffeeInfo: React.FC = () => {
         >
           {/* 헤더 */}
           <View style={styles.header}>
-            <View style={styles.progressBar}>
-              <View style={[styles.progressFill, { width: '29%' }]} />
-            </View>
+            <ProgressBar progress={0.29} style={styles.progressBar} />
             <View style={styles.headerContent}>
               <Text style={styles.title}>커피 정보</Text>
-              <View style={[styles.modeIndicator, {
-                backgroundColor: mode === 'cafe' ? colors.primary : colors.secondary
-              }]}>
-                <Text style={styles.modeText}>
-                  {mode === 'cafe' ? '☕ 카페 모드' : '🏠 홈카페 모드'}
-                </Text>
-              </View>
+              <Badge 
+                text={mode === 'cafe' ? '☕ 카페 모드' : '🏠 홈카페 모드'}
+                variant={mode === 'cafe' ? 'primary' : 'info'}
+              />
             </View>
           </View>
 
           {/* 필수 정보 섹션 */}
-          <View style={styles.section}>
+          <Card style={styles.section}>
             <Text style={styles.sectionTitle}>필수 정보</Text>
             
             {/* 카페명 (Cafe 모드만 - 선택사항) */}
@@ -392,43 +388,20 @@ export const CoffeeInfo: React.FC = () => {
             {/* 온도 선택 */}
             <View style={styles.temperatureContainer}>
               <Text style={styles.inputLabel}>온도 *</Text>
-              <View style={styles.temperatureButtons}>
-                <TouchableOpacity
-                  style={[
-                    styles.temperatureButton,
-                    temperature === 'hot' && styles.temperatureButtonActive
-                  ]}
-                  onPress={() => setTemperature('hot')}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[
-                    styles.temperatureButtonText,
-                    temperature === 'hot' && styles.temperatureButtonTextActive
-                  ]}>
-                    ☕ HOT
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.temperatureButton,
-                    temperature === 'iced' && styles.temperatureButtonActive
-                  ]}
-                  onPress={() => setTemperature('iced')}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[
-                    styles.temperatureButtonText,
-                    temperature === 'iced' && styles.temperatureButtonTextActive
-                  ]}>
-                    🧊 ICED
-                  </Text>
-                </TouchableOpacity>
-              </View>
+              <SegmentedControl
+                options={[
+                  { value: 'hot', label: 'HOT', icon: '☕' },
+                  { value: 'iced', label: 'ICED', icon: '🧊' }
+                ]}
+                value={temperature}
+                onValueChange={setTemperature}
+                fullWidth
+              />
             </View>
-          </View>
+          </Card>
 
           {/* 선택 정보 섹션 (Progressive Disclosure) */}
-          <View style={styles.section}>
+          <Card style={styles.section}>
             <TouchableOpacity
               style={styles.optionalHeader}
               onPress={() => setShowOptionalInfo(!showOptionalInfo)}
@@ -449,7 +422,7 @@ export const CoffeeInfo: React.FC = () => {
                     value={origin}
                     onChangeText={setOrigin}
                     placeholder="예: 에티오피아"
-                    placeholderTextColor={colors.gray400}
+                    placeholderTextColor={colors.gray[500]}
                   />
                 </View>
 
@@ -460,7 +433,7 @@ export const CoffeeInfo: React.FC = () => {
                     value={variety}
                     onChangeText={setVariety}
                     placeholder="예: Heirloom"
-                    placeholderTextColor={colors.gray400}
+                    placeholderTextColor={colors.gray[500]}
                   />
                 </View>
 
@@ -471,7 +444,7 @@ export const CoffeeInfo: React.FC = () => {
                     value={processing}
                     onChangeText={setProcessing}
                     placeholder="예: Washed"
-                    placeholderTextColor={colors.gray400}
+                    placeholderTextColor={colors.gray[500]}
                   />
                 </View>
 
@@ -482,7 +455,7 @@ export const CoffeeInfo: React.FC = () => {
                     value={roastLevel}
                     onChangeText={setRoastLevel}
                     placeholder="예: Medium"
-                    placeholderTextColor={colors.gray400}
+                    placeholderTextColor={colors.gray[500]}
                   />
                 </View>
 
@@ -493,34 +466,36 @@ export const CoffeeInfo: React.FC = () => {
                     value={altitude}
                     onChangeText={setAltitude}
                     placeholder="예: 2200"
-                    placeholderTextColor={colors.gray400}
+                    placeholderTextColor={colors.gray[500]}
                     keyboardType="numeric"
                   />
                 </View>
               </View>
             )}
-          </View>
+          </Card>
 
           {/* 안내 메시지 */}
           {!selectedCoffee && coffeeInput && (
-            <View style={styles.infoBox}>
-              <Text style={styles.infoIcon}>ℹ️</Text>
-              <Text style={styles.infoText}>
-                새로운 커피를 추가하고 있습니다. 추가 정보를 입력하면 다른 사용자에게 도움이 됩니다.
-              </Text>
-            </View>
+            <Card style={styles.infoBox} variant="outlined">
+              <View style={styles.infoContent}>
+                <Text style={styles.infoIcon}>ℹ️</Text>
+                <Text style={styles.infoText}>
+                  새로운 커피를 추가하고 있습니다. 추가 정보를 입력하면 다른 사용자에게 도움이 됩니다.
+                </Text>
+              </View>
+            </Card>
           )}
         </ScrollView>
 
         {/* 하단 버튼 */}
         <View style={styles.footer}>
-          <TouchableOpacity
-            style={styles.nextButton}
+          <Button 
+            title="다음"
             onPress={handleNext}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.nextButtonText}>다음</Text>
-          </TouchableOpacity>
+            variant="primary"
+            size="large"
+            fullWidth
+          />
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -544,15 +519,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.lg,
   },
   progressBar: {
-    height: 4,
-    backgroundColor: colors.gray200,
-    borderRadius: 2,
     marginBottom: spacing.lg,
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: colors.primary,
-    borderRadius: 2,
   },
   headerContent: {
     flexDirection: 'row',
@@ -562,26 +529,17 @@ const styles = StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold as any,
-    color: colors.text,
-  },
-  modeIndicator: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: 8,
-  },
-  modeText: {
-    color: colors.white,
-    fontSize: typography.fontSize.sm,
-    fontWeight: typography.fontWeight.medium as any,
+    color: colors.text.primary,
   },
   section: {
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.xl,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.lg,
+    padding: spacing.lg,
   },
   sectionTitle: {
     fontSize: typography.fontSize.md,
     fontWeight: typography.fontWeight.semibold as any,
-    color: colors.text,
+    color: colors.text.primary,
     marginBottom: spacing.md,
   },
   inputContainer: {
@@ -589,7 +547,7 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: typography.fontSize.sm,
-    color: colors.gray700,
+    color: colors.gray[700],
     marginBottom: spacing.xs,
     fontWeight: typography.fontWeight.medium as any,
   },
@@ -599,7 +557,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.gray300,
+    borderColor: colors.gray[300],
     paddingHorizontal: spacing.md,
     height: 48,
   },
@@ -608,24 +566,24 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   inputWrapperDisabled: {
-    backgroundColor: colors.gray100,
+    backgroundColor: colors.gray[100],
     opacity: 0.6,
   },
   input: {
     flex: 1,
     fontSize: typography.fontSize.md,
-    color: colors.text,
+    color: colors.text.primary,
     paddingVertical: 0,
   },
   simpleInput: {
     backgroundColor: colors.white,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.gray300,
+    borderColor: colors.gray[300],
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     fontSize: typography.fontSize.md,
-    color: colors.text,
+    color: colors.text.primary,
   },
   suggestionsContainer: {
     position: 'absolute',
@@ -635,7 +593,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.gray200,
+    borderColor: colors.gray[200],
     maxHeight: 200,
     elevation: 5,
     shadowColor: '#000',
@@ -648,44 +606,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: colors.gray100,
+    borderBottomColor: colors.gray[100],
   },
   suggestionText: {
     fontSize: typography.fontSize.md,
-    color: colors.text,
+    color: colors.text.primary,
   },
   suggestionSubtext: {
     fontSize: typography.fontSize.sm,
-    color: colors.gray500,
+    color: colors.gray[500],
     marginTop: 2,
   },
   temperatureContainer: {
     marginBottom: spacing.md,
-  },
-  temperatureButtons: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  temperatureButton: {
-    flex: 1,
-    paddingVertical: spacing.md,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.gray300,
-    alignItems: 'center',
-    backgroundColor: colors.white,
-  },
-  temperatureButtonActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  temperatureButtonText: {
-    fontSize: typography.fontSize.md,
-    color: colors.gray700,
-    fontWeight: typography.fontWeight.medium as any,
-  },
-  temperatureButtonTextActive: {
-    color: colors.white,
   },
   optionalHeader: {
     flexDirection: 'row',
@@ -695,20 +628,22 @@ const styles = StyleSheet.create({
   },
   toggleIcon: {
     fontSize: typography.fontSize.sm,
-    color: colors.gray600,
+    color: colors.gray[600],
   },
   optionalContent: {
-    backgroundColor: colors.gray50,
+    backgroundColor: colors.gray[50],
     borderRadius: 8,
     padding: spacing.md,
   },
   infoBox: {
-    flexDirection: 'row',
-    backgroundColor: colors.infoLight,
-    borderRadius: 8,
-    padding: spacing.md,
     marginHorizontal: spacing.lg,
     marginBottom: spacing.lg,
+    padding: spacing.lg,
+    backgroundColor: colors.secondaryLight,
+    borderColor: colors.primary,
+  },
+  infoContent: {
+    flexDirection: 'row',
   },
   infoIcon: {
     fontSize: typography.fontSize.md,
@@ -717,7 +652,7 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: typography.fontSize.sm,
-    color: colors.info,
+    color: colors.text.secondary,
     lineHeight: 20,
   },
   footer: {
@@ -725,18 +660,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     backgroundColor: colors.white,
     borderTopWidth: 1,
-    borderTopColor: colors.gray100,
-  },
-  nextButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.md,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  nextButtonText: {
-    color: colors.white,
-    fontSize: typography.fontSize.md,
-    fontWeight: typography.fontWeight.semibold as any,
+    borderTopColor: colors.gray[100],
   },
 });
 

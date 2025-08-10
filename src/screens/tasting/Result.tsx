@@ -14,7 +14,9 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors, spacing, typography } from '../../styles/theme';
+import { Card, Button, Badge, Chip, ProgressBar } from '../../components/common';
 import useStore from '../../store/useStore';
+import draftManager from '../../utils/draftManager';
 // Achievement store not yet implemented
 import type { NavigationProp } from '@react-navigation/native';
 
@@ -130,6 +132,9 @@ export const Result: React.FC = () => {
 
     // 성취 확인
     checkAchievements();
+    
+    // Clear draft as the record is complete
+    draftManager.clearDraft();
   }, []);
 
   // 성취 확인
@@ -167,6 +172,9 @@ export const Result: React.FC = () => {
       
       // 저장
       await AsyncStorage.setItem('@tasting_records', JSON.stringify(records));
+      
+      // Draft 삭제 - 기록이 완료되었으므로
+      await draftManager.clearDraft();
       
       return true;
     } catch (error) {
@@ -270,28 +278,28 @@ export const Result: React.FC = () => {
         </Animated.View>
 
         {/* 커피 정보 요약 */}
-        <View style={styles.section}>
-          <View style={styles.coffeeInfo}>
-            <Text style={styles.coffeeName}>{coffeeInfo?.name || '커피'}</Text>
-            {coffeeInfo?.roastery && (
-              <Text style={styles.coffeeRoastery}>{coffeeInfo.roastery}</Text>
-            )}
-            <Text style={styles.recordTime}>
-              {new Date().toLocaleString('ko-KR', {
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-              })}
-            </Text>
-          </View>
-        </View>
+        <Card style={styles.coffeeInfo}>
+          <Text style={styles.coffeeName}>{coffeeInfo?.name || '커피'}</Text>
+          {coffeeInfo?.roastery && (
+            <Text style={styles.coffeeRoastery}>{coffeeInfo.roastery}</Text>
+          )}
+          <Badge 
+            text={new Date().toLocaleString('ko-KR', {
+              month: 'long',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            })}
+            size="small"
+            variant="default"
+          />
+        </Card>
 
         {/* 로스터 vs 나의 선택 비교 */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>🔍 로스터 vs 나의 선택</Text>
           
-          <View style={styles.matchScoreCard}>
+          <Card style={styles.matchScoreCard}>
             <View style={styles.scoreCircle}>
               <Text style={[styles.scoreText, { color: matchLevel.color }]}>
                 {matchScore}%
@@ -310,18 +318,18 @@ export const Result: React.FC = () => {
                 로스터 노트와 {matchScore}% 일치
               </Text>
             </View>
-          </View>
+          </Card>
 
           {/* 비교 차트 */}
           {renderComparisonChart()}
           
           {/* 인사이트 */}
           {insights.length > 0 && (
-            <View style={styles.insightsContainer}>
+            <Card style={styles.insightsContainer} variant="outlined">
               {insights.map((insight, index) => (
                 <Text key={index} style={styles.insightText}>{insight}</Text>
               ))}
-            </View>
+            </Card>
           )}
         </View>
 
@@ -330,23 +338,26 @@ export const Result: React.FC = () => {
           <Text style={styles.sectionTitle}>🎯 나의 테이스팅</Text>
           
           {selectedFlavors && selectedFlavors.length > 0 && (
-            <View style={styles.summaryItem}>
+            <Card style={styles.summaryItem}>
               <Text style={styles.summaryLabel}>선택한 향미</Text>
               <View style={styles.flavorTags}>
                 {selectedFlavors.map((flavor, index) => (
-                  <View key={index} style={styles.flavorTag}>
-                    <Text style={styles.flavorTagText}>{flavor}</Text>
-                  </View>
+                  <Chip
+                    key={index}
+                    label={flavor}
+                    selected
+                    style={styles.flavorChip}
+                  />
                 ))}
               </View>
-            </View>
+            </Card>
           )}
           
           {personalNotes?.notes && (
-            <View style={styles.summaryItem}>
+            <Card style={styles.summaryItem}>
               <Text style={styles.summaryLabel}>개인 노트</Text>
               <Text style={styles.personalNote}>"{personalNotes.notes}"</Text>
-            </View>
+            </Card>
           )}
         </View>
 
@@ -389,29 +400,29 @@ export const Result: React.FC = () => {
 
         {/* 액션 버튼들 */}
         <View style={styles.actionButtons}>
-          <TouchableOpacity
-            style={styles.shareButton}
+          <Button
+            title="📱 결과 공유하기"
             onPress={handleShare}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.shareButtonText}>📱 결과 공유하기</Text>
-          </TouchableOpacity>
+            variant="secondary"
+            size="medium"
+            fullWidth
+          />
           
-          <TouchableOpacity
-            style={styles.primaryButton}
+          <Button
+            title="새로운 커피 기록하기"
             onPress={handleNewRecord}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.primaryButtonText}>새로운 커피 기록하기</Text>
-          </TouchableOpacity>
+            variant="primary"
+            size="large"
+            fullWidth
+          />
           
-          <TouchableOpacity
-            style={styles.secondaryButton}
+          <Button
+            title="홈으로 돌아가기"
             onPress={handleGoHome}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.secondaryButtonText}>홈으로 돌아가기</Text>
-          </TouchableOpacity>
+            variant="secondary"
+            size="medium"
+            fullWidth
+          />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -438,12 +449,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: typography.fontSize.xxl,
     fontWeight: typography.fontWeight.bold as any,
-    color: colors.text,
+    color: colors.text.primary,
     marginBottom: spacing.sm,
   },
   subtitle: {
     fontSize: typography.fontSize.md,
-    color: colors.gray600,
+    color: colors.gray[600],
     textAlign: 'center',
   },
   section: {
@@ -453,40 +464,30 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: typography.fontSize.lg,
     fontWeight: typography.fontWeight.semibold as any,
-    color: colors.text,
+    color: colors.text.primary,
     marginBottom: spacing.md,
   },
   coffeeInfo: {
-    backgroundColor: colors.white,
-    borderRadius: 12,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.xl,
     padding: spacing.lg,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.gray200,
   },
   coffeeName: {
     fontSize: typography.fontSize.lg,
     fontWeight: typography.fontWeight.bold as any,
-    color: colors.text,
+    color: colors.text.primary,
     marginBottom: spacing.xs,
   },
   coffeeRoastery: {
     fontSize: typography.fontSize.md,
-    color: colors.gray600,
+    color: colors.gray[600],
     marginBottom: spacing.sm,
-  },
-  recordTime: {
-    fontSize: typography.fontSize.sm,
-    color: colors.gray500,
   },
   matchScoreCard: {
     flexDirection: 'row',
-    backgroundColor: colors.white,
-    borderRadius: 12,
     padding: spacing.lg,
     marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.gray200,
   },
   scoreCircle: {
     width: 80,
@@ -503,7 +504,7 @@ const styles = StyleSheet.create({
   },
   scoreLabel: {
     fontSize: typography.fontSize.xs,
-    color: colors.gray600,
+    color: colors.gray[600],
     marginTop: 2,
   },
   scoreDetails: {
@@ -517,7 +518,7 @@ const styles = StyleSheet.create({
   },
   scoreBreakdown: {
     fontSize: typography.fontSize.sm,
-    color: colors.gray600,
+    color: colors.gray[600],
     marginBottom: 2,
   },
   comparisonChart: {
@@ -526,7 +527,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     marginBottom: spacing.md,
     borderWidth: 1,
-    borderColor: colors.gray200,
+    borderColor: colors.gray[200],
   },
   chartRow: {
     flexDirection: 'row',
@@ -550,23 +551,22 @@ const styles = StyleSheet.create({
   },
   chartLabel: {
     fontSize: typography.fontSize.xs,
-    color: colors.gray600,
+    color: colors.gray[600],
     marginBottom: spacing.xs,
   },
   chartCount: {
     fontSize: typography.fontSize.lg,
     fontWeight: typography.fontWeight.bold as any,
-    color: colors.text,
+    color: colors.text.primary,
     marginBottom: spacing.xs,
   },
   chartItem: {
     fontSize: typography.fontSize.xs,
-    color: colors.gray700,
+    color: colors.gray[700],
   },
   insightsContainer: {
-    backgroundColor: colors.primaryLight,
-    borderRadius: 8,
     padding: spacing.md,
+    marginBottom: spacing.md,
   },
   insightText: {
     fontSize: typography.fontSize.sm,
@@ -575,10 +575,11 @@ const styles = StyleSheet.create({
   },
   summaryItem: {
     marginBottom: spacing.md,
+    padding: spacing.lg,
   },
   summaryLabel: {
     fontSize: typography.fontSize.sm,
-    color: colors.gray600,
+    color: colors.gray[600],
     marginBottom: spacing.xs,
   },
   flavorTags: {
@@ -586,19 +587,12 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: spacing.xs,
   },
-  flavorTag: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: 16,
-  },
-  flavorTagText: {
-    color: colors.white,
-    fontSize: typography.fontSize.sm,
+  flavorChip: {
+    marginBottom: spacing.xs,
   },
   personalNote: {
     fontSize: typography.fontSize.md,
-    color: colors.text,
+    color: colors.text.primary,
     fontStyle: 'italic',
   },
   emotionTags: {
@@ -623,16 +617,16 @@ const styles = StyleSheet.create({
   achievementName: {
     fontSize: typography.fontSize.md,
     fontWeight: typography.fontWeight.semibold as any,
-    color: colors.text,
+    color: colors.text.primary,
   },
   achievementDesc: {
     fontSize: typography.fontSize.sm,
-    color: colors.gray600,
+    color: colors.gray[600],
   },
   statsGrid: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: colors.gray50,
+    backgroundColor: colors.gray[50],
     borderRadius: 8,
     padding: spacing.md,
   },
@@ -647,45 +641,11 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: typography.fontSize.sm,
-    color: colors.gray600,
+    color: colors.gray[600],
   },
   actionButtons: {
     paddingHorizontal: spacing.lg,
     gap: spacing.sm,
-  },
-  shareButton: {
-    backgroundColor: colors.gray100,
-    paddingVertical: spacing.md,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  shareButtonText: {
-    fontSize: typography.fontSize.md,
-    color: colors.gray700,
-    fontWeight: typography.fontWeight.medium as any,
-  },
-  primaryButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.md,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  primaryButtonText: {
-    fontSize: typography.fontSize.md,
-    color: colors.white,
-    fontWeight: typography.fontWeight.semibold as any,
-  },
-  secondaryButton: {
-    borderWidth: 1,
-    borderColor: colors.gray300,
-    paddingVertical: spacing.md,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  secondaryButtonText: {
-    fontSize: typography.fontSize.md,
-    color: colors.gray700,
-    fontWeight: typography.fontWeight.medium as any,
   },
 });
 

@@ -70,14 +70,26 @@ const initialState: TastingFlowState = {
 
 const defaultScreenOptions: StackNavigationOptions = {
   // Modal 스타일 설정
-  headerShown: false, // 커스텀 프로그레스 헤더 사용
+  headerShown: true, // 네비게이션 헤더 표시
+  headerStyle: {
+    backgroundColor: '#ffffff',
+    elevation: 0,
+    shadowOpacity: 0,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e1e5e9',
+  },
+  headerTitleStyle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333333',
+  },
   gestureEnabled: false, // 실수로 나가는 것 방지
   cardStyle: {
     backgroundColor: '#ffffff',
   },
   
-  // Modal 전환 애니메이션
-  presentation: 'modal',
+  // Modal 전환 애니메이션 - fullScreenModal로 변경하여 상단 바 제거
+  presentation: 'fullScreenModal',
   animationEnabled: true,
   cardStyleInterpolator: ({ current, layouts }) => {
     return {
@@ -248,6 +260,7 @@ export function TastingFlowNavigator() {
         options={{
           title: TASTING_FLOW_STEP_NAMES.ModeSelect,
           gestureEnabled: true, // 모드 선택에서는 나가기 허용
+          headerShown: false, // 모드 선택 화면은 헤더 숨김
         }}
       />
       
@@ -352,7 +365,7 @@ export function TastingFlowNavigator() {
         component={Result}
         options={{
           title: TASTING_FLOW_STEP_NAMES.Result,
-          headerShown: true,
+          headerShown: false, // 커스텀 헤더 사용
           gestureEnabled: false, // 결과 화면에서는 뒤로가기 방지
         }}
       />
