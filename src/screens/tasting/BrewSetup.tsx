@@ -14,7 +14,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors, spacing, typography, borderRadius } from '../../styles/theme';
-import { Card, Button, ProgressBar, SegmentedControl, Badge, Input, Stepper, Chip } from '../../components/common';
+import { Card, Button, ProgressBar, SegmentedControl, Badge, Input, Stepper, Chip, HeaderBar } from '../../components/common';
 import useStore from '../../store/useStore';
 import type { TastingFlowNavigationProp, TastingFlowRouteProp } from '../../types/navigation';
 
@@ -35,9 +35,8 @@ interface BrewSetupData {
     water_temp?: number;
     grind_setting?: string;
     brew_times: {
-      first_pour_time?: number;
       total_time?: number;
-      lap_times?: number[];
+      extraction_times?: number[];
     };
   };
   quick_note?: string;
@@ -63,18 +62,18 @@ const RATIO_PRESETS = [
   { value: 18, label: '1:18', description: '가벼운 맛' },
 ];
 
-const KEYPAD_NUMBERS = [
-  [1, 2, 3],
-  [4, 5, 6],
-  [7, 8, 9],
-  ['⌫', 0, '✓']
-];
-
 export const BrewSetup: React.FC = () => {
   const navigation = useNavigation<TastingFlowNavigationProp>();
   const route = useRoute<TastingFlowRouteProp<'BrewSetup'>>();
-  const { mode, coffeeData } = route.params;
+  // Safe params with fallback
+  const params = route.params || { mode: 'homecafe' as const, coffeeData: undefined };
+  const { mode, coffeeData } = params;
   const { setTastingFlowData } = useStore();
+  
+  // 현재 스크린 저장
+  useEffect(() => {
+    setTastingFlowData({ currentScreen: 'BrewSetup' });
+  }, []);
 
   // 상태 관리
   const [selectedDripper, setSelectedDripper] = useState<PouroverDripper>(PouroverDripper.V60);
@@ -85,14 +84,10 @@ export const BrewSetup: React.FC = () => {
   const [grindSetting, setGrindSetting] = useState('');
   const [quickNote, setQuickNote] = useState('');
   
-  // 키패드 상태
-  const [showKeypad, setShowKeypad] = useState(false);
-  const [keypadInput, setKeypadInput] = useState('20');
   
   // 타이머 관련
-  const [bloomTime, setBloomTime] = useState<number | null>(null);
   const [totalTime, setTotalTime] = useState<number | null>(null);
-  const [lapTimes, setLapTimes] = useState<number[]>([]);
+  const [extractionTimes, setExtractionTimes] = useState<number[]>([]);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [timerStartTime, setTimerStartTime] = useState<number | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -137,32 +132,13 @@ export const BrewSetup: React.FC = () => {
     setSelectedDripper(dripper);
   }, []);
 
-  // 키패드 입력 처리
-  const handleKeypadInput = useCallback((value: string | number) => {
-    if (value === '⌫') {
-      setKeypadInput(prev => prev.length > 1 ? prev.slice(0, -1) : '0');
-    } else if (value === '✓') {
-      const amount = parseInt(keypadInput) || 20;
-      if (amount >= 15 && amount <= 30) {
-        setCoffeeAmount(amount);
-        setShowKeypad(false);
-      } else {
-        Alert.alert('입력 오류', '원두량은 15g~30g 사이로 입력해주세요.');
-      }
-    } else {
-      if (keypadInput.length < 2 || (keypadInput === '0' && value !== 0)) {
-        const newInput = keypadInput === '0' ? value.toString() : keypadInput + value.toString();
-        if (parseInt(newInput) <= 30) {
-          setKeypadInput(newInput);
-        }
-      }
-    }
-  }, [keypadInput]);
-
-  // 원두량 입력 (키패드 방식)
+  // 원두량 입력 핸들러
   const handleCoffeeAmountChange = useCallback((text: string) => {
-    const amount = parseInt(text) || 0;
-    if (amount >= 0 && amount <= 50) { // 0-50g 범위 제한
+    // 숫자만 허용
+    const numericText = text.replace(/[^0-9]/g, '');
+    const amount = parseInt(numericText) || 0;
+    
+    if (amount <= 50) { // 최대 50g 제한
       setCoffeeAmount(amount);
     }
   }, []);
@@ -178,7 +154,7 @@ export const BrewSetup: React.FC = () => {
       setTimerStartTime(Date.now());
       setIsTimerRunning(true);
       setCurrentTime(0);
-      setLapTimes([]);
+      setExtractionTimes([]);
     }
   }, [isTimerRunning]);
 
@@ -189,18 +165,13 @@ export const BrewSetup: React.FC = () => {
     }
   }, [isTimerRunning, currentTime]);
 
-  const handleBloomRecord = useCallback(() => {
-    if (isTimerRunning && !bloomTime) {
-      setBloomTime(currentTime);
-      Alert.alert('블룸 시간 기록', `${currentTime}초에 블룸 완료`);
-    }
-  }, [isTimerRunning, bloomTime, currentTime]);
-
-  const handleLapTime = useCallback(() => {
+  const handleExtractionRecord = useCallback(() => {
     if (isTimerRunning) {
-      setLapTimes(prev => [...prev, currentTime]);
+      const newExtractionNumber = extractionTimes.length + 1;
+      setExtractionTimes(prev => [...prev, currentTime]);
+      Alert.alert('추출 시간 기록', `${newExtractionNumber}차 추출: ${formatTime(currentTime)}`);
     }
-  }, [isTimerRunning, currentTime]);
+  }, [isTimerRunning, currentTime, extractionTimes]);
 
   // 레시피 저장
   const handleSaveRecipe = useCallback(async () => {
@@ -243,9 +214,8 @@ export const BrewSetup: React.FC = () => {
         water_temp: waterTemp ? parseFloat(waterTemp) : undefined,
         grind_setting: grindSetting || undefined,
         brew_times: {
-          first_pour_time: bloomTime || undefined,
           total_time: totalTime || undefined,
-          lap_times: lapTimes.length > 0 ? lapTimes : undefined,
+          extraction_times: extractionTimes.length > 0 ? extractionTimes : undefined,
         },
       },
       quick_note: quickNote || undefined,
@@ -259,7 +229,7 @@ export const BrewSetup: React.FC = () => {
     navigation.navigate('FlavorSelection', { mode, coffeeData, brewData });
   }, [
     selectedDripper, coffeeAmount, waterAmount, selectedRatio, waterTemp,
-    grindSetting, bloomTime, totalTime, lapTimes, quickNote, 
+    grindSetting, totalTime, extractionTimes, quickNote, 
     navigation, mode, coffeeData, setTastingFlowData
   ]);
 
@@ -271,7 +241,15 @@ export const BrewSetup: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
+      <HeaderBar
+        title="브루잉 설정"
+        subtitle="🏠 홈카페 모드"
+        onBack={() => navigation.goBack()}
+        progress={0.375}
+        showProgress={true}
+      />
+      
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoid}
@@ -281,17 +259,6 @@ export const BrewSetup: React.FC = () => {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* 헤더 */}
-          <View style={styles.header}>
-            <ProgressBar progress={0.43} style={styles.progressBar} />
-            <View style={styles.headerContent}>
-              <Text style={styles.title}>브루잉 설정</Text>
-              <Badge 
-                text="🏠 홈카페 모드"
-                variant="info"
-              />
-            </View>
-          </View>
 
           {/* 드리퍼 선택 */}
           <Card style={styles.section}>
@@ -379,21 +346,19 @@ export const BrewSetup: React.FC = () => {
               </View>
             </ScrollView>
 
-            {/* 키패드 입력 시스템 */}
+            {/* 원두량 및 물량 입력 */}
             <View style={styles.amountContainer}>
               <View style={styles.amountItem}>
                 <Text style={styles.inputLabel}>원두량 (g)</Text>
-                <TouchableOpacity 
-                  style={styles.keypadTrigger}
-                  onPress={() => {
-                    setKeypadInput(coffeeAmount.toString());
-                    setShowKeypad(true);
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.keypadTriggerText}>{coffeeAmount}g</Text>
-                  <Text style={styles.keypadHint}>탭하여 변경</Text>
-                </TouchableOpacity>
+                <TextInput
+                  style={styles.amountInput}
+                  value={coffeeAmount.toString()}
+                  onChangeText={handleCoffeeAmountChange}
+                  keyboardType="number-pad"
+                  placeholder="20"
+                  placeholderTextColor={colors.gray[500]}
+                  maxLength={2}
+                />
               </View>
               <View style={styles.amountItem}>
                 <Text style={styles.inputLabel}>물량 (ml)</Text>
@@ -403,47 +368,6 @@ export const BrewSetup: React.FC = () => {
                 </View>
               </View>
             </View>
-
-            {/* 키패드 모달 */}
-            {showKeypad && (
-              <View style={styles.keypadContainer}>
-                <View style={styles.keypadHeader}>
-                  <Text style={styles.keypadTitle}>원두량 입력 (15-30g)</Text>
-                  <Text style={styles.keypadDisplay}>{keypadInput}g</Text>
-                </View>
-                <View style={styles.keypad}>
-                  {KEYPAD_NUMBERS.map((row, rowIndex) => (
-                    <View key={rowIndex} style={styles.keypadRow}>
-                      {row.map((num, numIndex) => (
-                        <TouchableOpacity
-                          key={numIndex}
-                          style={[
-                            styles.keypadButton,
-                            (num === '⌫' || num === '✓') && styles.keypadButtonAction
-                          ]}
-                          onPress={() => handleKeypadInput(num)}
-                          activeOpacity={0.7}
-                        >
-                          <Text style={[
-                            styles.keypadButtonText,
-                            (num === '⌫' || num === '✓') && styles.keypadButtonActionText
-                          ]}>
-                            {num}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                  ))}
-                </View>
-                <TouchableOpacity
-                  style={styles.keypadCancel}
-                  onPress={() => setShowKeypad(false)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.keypadCancelText}>취소</Text>
-                </TouchableOpacity>
-              </View>
-            )}
 
             {/* 물 온도 */}
             <Input
@@ -469,8 +393,10 @@ export const BrewSetup: React.FC = () => {
               <Text style={styles.inputLabel}>추출 타이머</Text>
               <View style={styles.timerDisplay}>
                 <Text style={styles.timerText}>{formatTime(currentTime)}</Text>
-                {bloomTime && (
-                  <Text style={styles.timerSubtext}>블룸: {bloomTime}초</Text>
+                {extractionTimes.length > 0 && (
+                  <Text style={styles.timerSubtext}>
+                    {extractionTimes.length}차 추출까지 기록됨
+                  </Text>
                 )}
               </View>
               
@@ -493,30 +419,22 @@ export const BrewSetup: React.FC = () => {
                       <Text style={styles.timerButtonText}>⏹ 정지</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={[styles.timerButton, bloomTime && styles.timerButtonDisabled]}
-                      onPress={handleBloomRecord}
-                      activeOpacity={0.7}
-                      disabled={!!bloomTime}
-                    >
-                      <Text style={styles.timerButtonText}>💧 블룸</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
                       style={styles.timerButton}
-                      onPress={handleLapTime}
+                      onPress={handleExtractionRecord}
                       activeOpacity={0.7}
                     >
-                      <Text style={styles.timerButtonText}>⏱ 랩</Text>
+                      <Text style={styles.timerButtonText}>☕ 추출</Text>
                     </TouchableOpacity>
                   </>
                 )}
               </View>
 
-              {lapTimes.length > 0 && (
+              {extractionTimes.length > 0 && (
                 <View style={styles.lapTimesContainer}>
-                  <Text style={styles.lapTimesTitle}>랩 타임:</Text>
-                  {lapTimes.map((lap, index) => (
+                  <Text style={styles.lapTimesTitle}>추출 기록:</Text>
+                  {extractionTimes.map((extractionTime, index) => (
                     <Text key={index} style={styles.lapTime}>
-                      랩 {index + 1}: {formatTime(lap)}
+                      {index + 1}차 추출: {formatTime(extractionTime)}
                     </Text>
                   ))}
                 </View>
@@ -568,26 +486,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
+    paddingTop: spacing.lg,
     paddingBottom: spacing.xxl,
-  },
-  header: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.lg,
-  },
-  progressBar: {
-    marginBottom: spacing.lg,
-  },
-  headerContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: typography.fontSize.xl,
-    fontWeight: typography.fontWeight.bold as any,
-    color: colors.text.primary,
-    marginBottom: spacing.xs,
   },
   subtitle: {
     fontSize: typography.fontSize.md,
@@ -735,92 +635,6 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.xs,
     color: colors.gray[500],
     marginTop: 2,
-  },
-  keypadTrigger: {
-    backgroundColor: colors.white,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: colors.secondary,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    alignItems: 'center',
-  },
-  keypadTriggerText: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.semibold as any,
-    color: colors.secondary,
-  },
-  keypadHint: {
-    fontSize: typography.fontSize.xs,
-    color: colors.gray[500],
-    marginTop: 2,
-  },
-  keypadContainer: {
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    padding: spacing.lg,
-    marginVertical: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.gray[200],
-    shadowColor: colors.gray[800],
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  keypadHeader: {
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  keypadTitle: {
-    fontSize: typography.fontSize.md,
-    color: colors.gray[600],
-    marginBottom: spacing.sm,
-  },
-  keypadDisplay: {
-    fontSize: typography.fontSize.xxl,
-    fontWeight: typography.fontWeight.bold as any,
-    color: colors.secondary,
-  },
-  keypad: {
-    gap: spacing.sm,
-  },
-  keypadRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    justifyContent: 'center',
-  },
-  keypadButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: colors.gray[50],
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.gray[200],
-  },
-  keypadButtonAction: {
-    backgroundColor: colors.secondary,
-    borderColor: colors.secondary,
-  },
-  keypadButtonText: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.medium as any,
-    color: colors.gray[700],
-  },
-  keypadButtonActionText: {
-    color: colors.white,
-    fontWeight: typography.fontWeight.semibold as any,
-  },
-  keypadCancel: {
-    marginTop: spacing.md,
-    paddingVertical: spacing.sm,
-    alignItems: 'center',
-  },
-  keypadCancelText: {
-    fontSize: typography.fontSize.md,
-    color: colors.gray[500],
   },
   timerSection: {
     backgroundColor: colors.gray[50],

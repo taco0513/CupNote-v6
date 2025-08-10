@@ -17,7 +17,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors, spacing, typography, borderRadius } from '../../styles/theme';
-import { Card, Button, ProgressBar, SegmentedControl, Badge } from '../../components/common';
+import { Card, Button, ProgressBar, SegmentedControl, Badge, HeaderBar } from '../../components/common';
 import useStore from '../../store/useStore';
 import type { TastingFlowNavigationProp, TastingFlowRouteProp } from '../../types/navigation';
 
@@ -77,6 +77,7 @@ interface CoffeeInfoData {
     processing?: string;
     roast_level?: string;
     altitude?: number;
+    roaster_note?: string;
   };
   is_new_coffee?: boolean;
   auto_filled?: boolean;
@@ -165,8 +166,15 @@ const AutocompleteInput: React.FC<{
 export const CoffeeInfo: React.FC = () => {
   const navigation = useNavigation<TastingFlowNavigationProp>();
   const route = useRoute<TastingFlowRouteProp<'CoffeeInfo'>>();
-  const { mode } = route.params;
+  // Safe params with fallback
+  const params = route.params || { mode: 'cafe' as const };
+  const { mode } = params;
   const { setTastingFlowData } = useStore();
+  
+  // 현재 스크린 저장
+  useEffect(() => {
+    setTastingFlowData({ currentScreen: 'CoffeeInfo', mode });
+  }, []);
 
   // 기본 상태
   const [selectedCafe, setSelectedCafe] = useState<any>(null);
@@ -186,6 +194,7 @@ export const CoffeeInfo: React.FC = () => {
   const [processing, setProcessing] = useState('');
   const [roastLevel, setRoastLevel] = useState('');
   const [altitude, setAltitude] = useState('');
+  const [roasterNote, setRoasterNote] = useState('');
   
   const [loading, setLoading] = useState(false);
 
@@ -293,6 +302,7 @@ export const CoffeeInfo: React.FC = () => {
         processing: processing || undefined,
         roast_level: roastLevel || undefined,
         altitude: altitude ? parseInt(altitude) : undefined,
+        roaster_note: roasterNote || undefined,
       } : undefined,
       is_new_coffee: !selectedCoffee,
       auto_filled: !!selectedCoffee,
@@ -302,6 +312,7 @@ export const CoffeeInfo: React.FC = () => {
       coffeeName: coffeeInfoData.coffee_name,
       cafeName: coffeeInfoData.cafe_name,
       roastery: coffeeInfoData.roaster_name,
+      roasterNote: showOptionalInfo ? roasterNote : undefined,
     }});
 
     // 새로운 커피인 경우 DB에 추가 (실제로는 API 호출)
@@ -327,7 +338,15 @@ export const CoffeeInfo: React.FC = () => {
       altitude, selectedCoffee, navigation, setTastingFlowData]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
+      <HeaderBar
+        title="커피 정보"
+        subtitle={mode === 'cafe' ? '☕ 카페 모드' : '🏠 홈카페 모드'}
+        onBack={() => navigation.goBack()}
+        progress={mode === 'cafe' ? 0.29 : 0.25}
+        showProgress={true}
+      />
+      
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoid}
@@ -337,17 +356,6 @@ export const CoffeeInfo: React.FC = () => {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* 헤더 */}
-          <View style={styles.header}>
-            <ProgressBar progress={0.29} style={styles.progressBar} />
-            <View style={styles.headerContent}>
-              <Text style={styles.title}>커피 정보</Text>
-              <Badge 
-                text={mode === 'cafe' ? '☕ 카페 모드' : '🏠 홈카페 모드'}
-                variant={mode === 'cafe' ? 'primary' : 'info'}
-              />
-            </View>
-          </View>
 
           {/* 필수 정보 섹션 */}
           <Card style={styles.section}>
@@ -470,6 +478,20 @@ export const CoffeeInfo: React.FC = () => {
                     keyboardType="numeric"
                   />
                 </View>
+
+                <View style={styles.inputContainer}>
+                  <Text style={styles.inputLabel}>로스터 노트</Text>
+                  <TextInput
+                    style={[styles.simpleInput, styles.textArea]}
+                    value={roasterNote}
+                    onChangeText={setRoasterNote}
+                    placeholder="로스터가 제공하는 커피의 특징이나 향미 노트를 입력해주세요"
+                    placeholderTextColor={colors.gray[500]}
+                    multiline
+                    numberOfLines={3}
+                    textAlignVertical="top"
+                  />
+                </View>
               </View>
             )}
           </Card>
@@ -511,25 +533,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
+    paddingTop: spacing.lg,
     paddingBottom: spacing.xxl,
-  },
-  header: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.lg,
-  },
-  progressBar: {
-    marginBottom: spacing.lg,
-  },
-  headerContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: typography.fontSize.xl,
-    fontWeight: typography.fontWeight.bold as any,
-    color: colors.text.primary,
   },
   section: {
     marginHorizontal: spacing.lg,
@@ -654,6 +659,11 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.sm,
     color: colors.text.secondary,
     lineHeight: 20,
+  },
+  textArea: {
+    minHeight: 80,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.sm,
   },
   footer: {
     paddingHorizontal: spacing.lg,

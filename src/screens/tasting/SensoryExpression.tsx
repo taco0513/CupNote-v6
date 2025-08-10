@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { colors, spacing, typography } from '../../styles/theme';
-import { Card, Button, ProgressBar, Badge, Chip } from '../../components/common';
+import { Card, Button, ProgressBar, Badge, Chip, HeaderBar } from '../../components/common';
 import useStore from '../../store/useStore';
 import type { TastingFlowNavigationProp, TastingFlowRouteProp } from '../../types/navigation';
 
@@ -164,8 +164,15 @@ interface SensoryExpressionData {
 export const SensoryExpression: React.FC = () => {
   const navigation = useNavigation<TastingFlowNavigationProp>();
   const route = useRoute<TastingFlowRouteProp<'SensoryExpression'>>();
-  const { mode } = route.params;
+  // Safe params with fallback
+  const params = route.params || { mode: 'cafe' as const };
+  const { mode } = params;
   const { setTastingFlowData } = useStore();
+  
+  // 현재 스크린 저장
+  useEffect(() => {
+    setTastingFlowData({ currentScreen: 'SensoryExpression' });
+  }, []);
 
   // 선택 상태 관리 (카테고리별로 최대 3개)
   const [selections, setSelections] = useState<Record<SensoryCategory, string[]>>({
@@ -270,22 +277,19 @@ export const SensoryExpression: React.FC = () => {
   }, [selections, navigation, mode, setTastingFlowData]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
+      <HeaderBar
+        title="감각 표현"
+        subtitle={mode === 'cafe' ? '☕ 카페 모드' : '🏠 홈카페 모드'}
+        onBack={() => navigation.goBack()}
+        progress={mode === 'cafe' ? 0.57 : 0.625}
+        showProgress={true}
+      />
+      
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
-          {/* Header */}
-          <View style={styles.header}>
-            <ProgressBar 
-              progress={mode === 'cafe' ? 0.67 : 0.71} 
-              style={styles.progressBar} 
-            />
-            <View style={styles.headerContent}>
-              <Text style={styles.title}>감각 표현</Text>
-              <Badge 
-                text={mode === 'cafe' ? '☕ 카페 모드' : '🏠 홈카페 모드'}
-                variant={mode === 'cafe' ? 'primary' : 'info'}
-              />
-            </View>
+          {/* Guide Section */}
+          <View style={styles.guideSection}>
             <Text style={styles.subtitle}>💬 느껴지는 감각을 자유롭게 선택해주세요</Text>
             <Text style={styles.hint}>각 카테고리에서 최대 3개까지 선택 가능</Text>
           </View>
@@ -406,26 +410,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
+    paddingTop: spacing.lg,
     paddingBottom: spacing.xxl,
   },
-  header: {
+  guideSection: {
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
     paddingBottom: spacing.lg,
-  },
-  progressBar: {
-    marginBottom: spacing.lg,
-  },
-  headerContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  title: {
-    fontSize: typography.fontSize.xl,
-    fontWeight: typography.fontWeight.bold as any,
-    color: colors.text.primary,
   },
   subtitle: {
     fontSize: typography.fontSize.md,

@@ -3,25 +3,88 @@
  * Uses design system components
  */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Card, Button, HeaderBar } from '../../components/common';
 import { colors, typography, spacing, borderRadius, shadows } from '../../styles/theme';
+import useStore from '../../store/useStore';
 import type { TastingFlowNavigationProp } from '../../types/navigation';
+
+// 스크린 이름을 한글로 변환하는 헬퍼 함수
+const getScreenDisplayName = (screenName?: string): string => {
+  const screenNames: Record<string, string> = {
+    'CoffeeInfo': '커피 정보',
+    'BrewSetup': '브루잉 설정',
+    'FlavorSelection': '향미 선택',
+    'SensoryExpression': '감각 표현',
+    'SensoryMouthFeel': '수치 평가',
+    'PersonalNotes': '개인 노트',
+    'Result': '결과',
+  };
+  return screenNames[screenName || ''] || '알 수 없음';
+};
 
 export const ModeSelect: React.FC = () => {
   const navigation = useNavigation<TastingFlowNavigationProp>();
+  const { tastingFlowData, resetTastingFlowData, setTastingFlowData } = useStore();
+  const [hasSavedProgress, setHasSavedProgress] = useState(false);
+
+  useEffect(() => {
+    // 저장된 진행 상황이 있는지 확인 (24시간 이내)
+    if (tastingFlowData?.lastUpdated && tastingFlowData?.currentScreen) {
+      const lastUpdate = new Date(tastingFlowData.lastUpdated);
+      const hoursSinceUpdate = (Date.now() - lastUpdate.getTime()) / (1000 * 60 * 60);
+      
+      if (hoursSinceUpdate < 24) {
+        setHasSavedProgress(true);
+      } else {
+        // 24시간이 지났으면 자동으로 리셋
+        resetTastingFlowData();
+      }
+    }
+  }, [tastingFlowData]);
 
   const handleModeSelect = (mode: 'cafe' | 'homecafe') => {
+    resetTastingFlowData();
+    setTastingFlowData({ mode, currentScreen: 'CoffeeInfo' });
     navigation.navigate('CoffeeInfo', { mode });
+  };
+
+  const handleContinue = () => {
+    if (!tastingFlowData?.currentScreen || !tastingFlowData?.mode) return;
+    
+    const mode = tastingFlowData.mode;
+    const screen = tastingFlowData.currentScreen as any;
+    
+    // 저장된 스크린으로 네비게이션
+    navigation.navigate(screen, { mode });
+  };
+
+  const handleResetAndStart = () => {
+    Alert.alert(
+      '새로 시작',
+      '저장된 진행 상황을 삭제하고 새로 시작하시겠습니까?',
+      [
+        { text: '취소', style: 'cancel' },
+        { 
+          text: '새로 시작',
+          onPress: () => {
+            resetTastingFlowData();
+            setHasSavedProgress(false);
+          },
+          style: 'destructive'
+        }
+      ]
+    );
   };
 
   return (
@@ -43,6 +106,43 @@ export const ModeSelect: React.FC = () => {
             상황에 맞는 기록 방식을 선택해주세요
           </Text>
         </View>
+
+        {/* Continue Card - 저장된 진행 상황이 있을 때만 표시 */}
+        {hasSavedProgress && tastingFlowData && (
+          <Card variant="elevated" style={styles.continueCard}>
+            <View style={styles.continueHeader}>
+              <View style={styles.continueIconContainer}>
+                <Text style={styles.continueIcon}>📝</Text>
+              </View>
+              <View style={styles.continueContent}>
+                <Text style={styles.continueTitle}>이어서 기록하기</Text>
+                <Text style={styles.continueSubtitle}>
+                  {tastingFlowData.mode === 'cafe' ? '☕ 카페 모드' : '🏠 홈카페 모드'} • {' '}
+                  {tastingFlowData.coffeeInfo?.coffeeName || '진행 중'}
+                </Text>
+                <Text style={styles.continueProgress}>
+                  마지막 작업: {getScreenDisplayName(tastingFlowData.currentScreen)}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.continueActions}>
+              <Button
+                title="이어가기"
+                onPress={handleContinue}
+                variant="primary"
+                size="medium"
+                fullWidth
+              />
+              <TouchableOpacity
+                onPress={handleResetAndStart}
+                style={styles.resetButton}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.resetButtonText}>새로 시작</Text>
+              </TouchableOpacity>
+            </View>
+          </Card>
+        )}
 
         {/* Mode Cards */}
         <View style={styles.cardsContainer}>
@@ -215,6 +315,60 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.sm,
     color: colors.text.secondary,
     lineHeight: typography.fontSize.sm * typography.lineHeight.relaxed,
+  },
+  continueCard: {
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.xl,
+    padding: spacing.lg,
+    backgroundColor: colors.primaryLight,
+    borderColor: colors.primary,
+    borderWidth: 1,
+  },
+  continueHeader: {
+    flexDirection: 'row',
+    marginBottom: spacing.md,
+  },
+  continueIconContainer: {
+    width: 48,
+    height: 48,
+    backgroundColor: colors.white,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: spacing.md,
+  },
+  continueIcon: {
+    fontSize: 24,
+  },
+  continueContent: {
+    flex: 1,
+  },
+  continueTitle: {
+    fontSize: typography.fontSize.lg,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.text.primary,
+    marginBottom: spacing.xs,
+  },
+  continueSubtitle: {
+    fontSize: typography.fontSize.sm,
+    color: colors.primary,
+    marginBottom: spacing.xs,
+  },
+  continueProgress: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.secondary,
+  },
+  continueActions: {
+    gap: spacing.sm,
+  },
+  resetButton: {
+    paddingVertical: spacing.sm,
+    alignItems: 'center',
+  },
+  resetButtonText: {
+    fontSize: typography.fontSize.sm,
+    color: colors.error,
+    fontWeight: typography.fontWeight.medium,
   },
 });
 

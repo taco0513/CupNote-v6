@@ -188,9 +188,11 @@ export const Result: React.FC = () => {
     try {
       const message = `☕ CupNote 커피 기록\n\n` +
         `${coffeeInfo?.name || '커피'}\n` +
+        `${coffeeInfo?.roastery ? `로스터리: ${coffeeInfo.roastery}\n` : ''}` +
         `매치 스코어: ${matchScore}%\n` +
         `${matchLevel.text}\n\n` +
         `향미: ${selectedFlavors?.join(', ') || ''}\n` +
+        `${coffeeInfo?.roasterNote ? `로스터 노트: ${coffeeInfo.roasterNote}\n` : ''}` +
         `${personalNotes?.notes || ''}\n\n` +
         `#CupNote #커피기록 #스페셜티커피`;
       
@@ -353,6 +355,13 @@ export const Result: React.FC = () => {
             </Card>
           )}
           
+          {coffeeInfo?.roasterNote && (
+            <Card style={styles.summaryItem}>
+              <Text style={styles.summaryLabel}>로스터 노트</Text>
+              <Text style={styles.personalNote}>"{coffeeInfo.roasterNote}"</Text>
+            </Card>
+          )}
+
           {personalNotes?.notes && (
             <Card style={styles.summaryItem}>
               <Text style={styles.summaryLabel}>개인 노트</Text>

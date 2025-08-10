@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,7 @@ import {
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, typography } from '../../styles/theme';
-import { Card, Button, ProgressBar, Badge, Slider } from '../../components/common';
+import { Card, Button, ProgressBar, Badge, Slider, HeaderBar } from '../../components/common';
 import useStore from '../../store/useStore';
 import type { TastingFlowNavigationProp, TastingFlowRouteProp } from '../../types/navigation';
 
@@ -114,9 +114,18 @@ export const SensoryMouthFeel: React.FC = () => {
   const navigation = useNavigation<TastingFlowNavigationProp>();
   const route = useRoute<TastingFlowRouteProp<'SensoryMouthFeel'>>();
   const { setTastingFlowData } = useStore();
+  
+  // Safe params with fallback
+  const params = route.params || { mode: 'cafe' as const };
+  
+  // 현재 스크린 저장
+  useEffect(() => {
+    setTastingFlowData({ currentScreen: 'SensoryMouthFeel' });
+  }, []);
 
   // 상태 관리
   const [scores, setScores] = useState(DEFAULT_SCORES);
+  const [skippedItems, setSkippedItems] = useState<Set<keyof typeof scores>>(new Set());
 
   // 점수 업데이트 핸들러
   const handleScoreChange = useCallback((category: keyof typeof scores, value: number) => {
@@ -124,6 +133,25 @@ export const SensoryMouthFeel: React.FC = () => {
       ...prev,
       [category]: Math.round(value) // 정수값으로만 저장
     }));
+    // 슬라이더를 조작하면 스킵 상태 해제
+    setSkippedItems(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(category);
+      return newSet;
+    });
+  }, []);
+
+  // 개별 항목 스킵 토글
+  const toggleSkipItem = useCallback((category: keyof typeof scores) => {
+    setSkippedItems(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(category)) {
+        newSet.delete(category);
+      } else {
+        newSet.add(category);
+      }
+      return newSet;
+    });
   }, []);
 
 
@@ -138,91 +166,112 @@ export const SensoryMouthFeel: React.FC = () => {
       cleanliness: 0,
       aftertaste: 0,
     }});
-    navigation.navigate('PersonalNotes', route.params);
-  }, [navigation, route.params, setTastingFlowData]);
+    navigation.navigate('PersonalNotes', params);
+  }, [navigation, params, setTastingFlowData]);
 
   // 다음 버튼 핸들러
   const handleNext = useCallback(() => {
     setTastingFlowData({ ratings: {
-      acidity: scores.acidity || 0,
-      sweetness: scores.sweetness || 0,
-      bitterness: scores.bitterness || 0,
-      body: scores.body || 0,
-      balance: scores.balance || 0,
-      cleanliness: scores.finish || 0,
-      aftertaste: scores.finish || 0,
+      acidity: skippedItems.has('acidity') ? 0 : scores.acidity,
+      sweetness: skippedItems.has('sweetness') ? 0 : scores.sweetness,
+      bitterness: skippedItems.has('bitterness') ? 0 : scores.bitterness,
+      body: skippedItems.has('body') ? 0 : scores.body,
+      balance: skippedItems.has('balance') ? 0 : scores.balance,
+      cleanliness: skippedItems.has('finish') ? 0 : scores.finish,
+      aftertaste: skippedItems.has('finish') ? 0 : scores.finish,
     }});
-    navigation.navigate('PersonalNotes', route.params);
-  }, [scores, navigation, route.params, setTastingFlowData]);
+    navigation.navigate('PersonalNotes', params);
+  }, [scores, skippedItems, navigation, params, setTastingFlowData]);
 
 
   // 슬라이더 아이템 렌더링
   const renderSliderItem = (key: keyof typeof scores) => {
     const item = EVALUATION_ITEMS[key];
     const value = scores[key];
+    const isSkipped = skippedItems.has(key);
     
     // Safe value display for Badge
     const safeValue = typeof value === 'number' && !isNaN(value) ? value : 3;
-    const displayValue = safeValue.toString();
+    const displayValue = isSkipped ? '스킵' : safeValue.toString();
 
     return (
-      <Card key={key} style={styles.sliderContainer}>
+      <Card key={key} style={[styles.sliderContainer, isSkipped && styles.sliderContainerSkipped]}>
         <View style={styles.sliderHeader}>
           <View style={styles.sliderTitle}>
-            <Text style={styles.sliderEmoji}>{item.emoji}</Text>
-            <Text style={styles.sliderName}>{item.name}</Text>
+            <Text style={[styles.sliderEmoji, isSkipped && styles.textSkipped]}>{item.emoji}</Text>
+            <Text style={[styles.sliderName, isSkipped && styles.textSkipped]}>{item.name}</Text>
           </View>
-          <Badge 
-            text={displayValue} 
-            variant={item.color === colors.primary ? 'primary' : 'default'}
-          />
+          <View style={styles.sliderActions}>
+            {!isSkipped && (
+              <Badge 
+                text={displayValue} 
+                variant={item.color === colors.primary ? 'primary' : 'default'}
+              />
+            )}
+            <TouchableOpacity
+              onPress={() => toggleSkipItem(key)}
+              style={[styles.skipButton, isSkipped && styles.skipButtonActive]}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.skipButtonText, isSkipped && styles.skipButtonTextActive]}>
+                {isSkipped ? '평가하기' : '스킵'}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
-        <Text style={styles.sliderDescription}>{item.description}</Text>
-        <Slider
-          value={safeValue}
-          onValueChange={(val) => handleScoreChange(key, val)}
-          min={1}
-          max={5}
-          step={1}
-          color={item.color}
-          style={styles.slider}
-        />
-        <View style={styles.sliderLabels}>
-          <Text style={styles.sliderLabelMin}>약함</Text>
-          <Text style={styles.sliderLabelCurrent}>
-            {item.labels[safeValue] || item.labels[3]}
-          </Text>
-          <Text style={styles.sliderLabelMax}>강함</Text>
-        </View>
+        
+        {!isSkipped && (
+          <>
+            <Text style={styles.sliderDescription}>{item.description}</Text>
+            <Slider
+              value={safeValue}
+              onValueChange={(val) => handleScoreChange(key, val)}
+              min={1}
+              max={5}
+              step={1}
+              color={item.color}
+              style={styles.slider}
+            />
+            <View style={styles.sliderLabels}>
+              <Text style={styles.sliderLabelMin}>약함</Text>
+              <Text style={styles.sliderLabelCurrent}>
+                {item.labels[safeValue] || item.labels[3]}
+              </Text>
+              <Text style={styles.sliderLabelMax}>강함</Text>
+            </View>
+          </>
+        )}
+        
+        {isSkipped && (
+          <View style={styles.skippedMessage}>
+            <Text style={styles.skippedMessageText}>이 항목은 평가하지 않습니다</Text>
+          </View>
+        )}
       </Card>
     );
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
+      <HeaderBar
+        title="수치 평가"
+        subtitle={params.mode === 'cafe' ? '☕ 카페 모드' : '🏠 홈카페 모드'}
+        onBack={() => navigation.goBack()}
+        progress={params.mode === 'cafe' ? 0.71 : 0.75}
+        showProgress={true}
+      />
+      
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* 헤더 */}
-        <View style={styles.header}>
-          <ProgressBar 
-            progress={route.params.mode === 'cafe' ? 0.83 : 0.86} 
-            style={styles.progressBar} 
-          />
-          <View style={styles.headerContent}>
-            <Text style={styles.title}>수치 평가</Text>
-            <Badge 
-              text={route.params.mode === 'cafe' ? '☕ 카페 모드' : '🏠 홈카페 모드'}
-              variant={route.params.mode === 'cafe' ? 'primary' : 'info'}
-            />
-          </View>
-        </View>
 
         {/* 안내 메시지 */}
         <Card style={styles.guideSection}>
           <Text style={styles.guideTitle}>☕ 커피의 마우스필을 평가해주세요</Text>
-          <Text style={styles.guideSubtitle}>1점(약함) ~ 5점(강함)</Text>
+          <Text style={styles.guideSubtitle}>
+            1점(약함) ~ 5점(강함) • 평가: {6 - skippedItems.size}/6개
+          </Text>
         </Card>
 
         {/* 슬라이더 섹션 */}
@@ -260,25 +309,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   scrollContent: {
+    paddingTop: spacing.lg,
     paddingBottom: spacing.xxl,
-  },
-  header: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.lg,
-  },
-  progressBar: {
-    marginBottom: spacing.lg,
-  },
-  headerContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: typography.fontSize.xl,
-    fontWeight: typography.fontWeight.bold as any,
-    color: colors.text.primary,
   },
   guideSection: {
     marginHorizontal: spacing.lg,
@@ -303,6 +335,10 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     padding: spacing.lg,
   },
+  sliderContainerSkipped: {
+    backgroundColor: colors.gray[50],
+    opacity: 0.8,
+  },
   sliderHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -310,6 +346,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   sliderTitle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    flex: 1,
+  },
+  sliderActions: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
@@ -371,6 +413,38 @@ const styles = StyleSheet.create({
   },
   nextFooterButton: {
     flex: 2,
+  },
+  skipButton: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: 16,
+    backgroundColor: colors.gray[100],
+    borderWidth: 1,
+    borderColor: colors.gray[200],
+  },
+  skipButtonActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  skipButtonText: {
+    fontSize: typography.fontSize.sm,
+    color: colors.gray[600],
+    fontWeight: typography.fontWeight.medium as any,
+  },
+  skipButtonTextActive: {
+    color: colors.white,
+  },
+  textSkipped: {
+    opacity: 0.5,
+  },
+  skippedMessage: {
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+  },
+  skippedMessageText: {
+    fontSize: typography.fontSize.sm,
+    color: colors.gray[500],
+    fontStyle: 'italic',
   },
 });
 

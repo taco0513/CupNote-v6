@@ -49,10 +49,13 @@ interface CoffeeRecord {
 
 interface TastingFlowData {
   mode?: 'cafe' | 'homecafe';
+  currentScreen?: string; // 현재 진행 중인 스크린
+  lastUpdated?: Date; // 마지막 업데이트 시간
   coffeeInfo?: {
     coffeeName: string;
     cafeName?: string;
     roastery?: string;
+    roasterNote?: string;
   };
   brewSetup?: {
     brewMethod: string;
@@ -201,7 +204,11 @@ const useStore = create<AppState>()(
       
       setTastingFlowData: (data) =>
         set((state) => ({
-          tastingFlowData: { ...state.tastingFlowData, ...data },
+          tastingFlowData: { 
+            ...state.tastingFlowData, 
+            ...data,
+            lastUpdated: new Date() 
+          },
         })),
       
       resetTastingFlowData: () => set({ tastingFlowData: {} }),

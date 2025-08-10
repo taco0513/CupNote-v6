@@ -61,15 +61,17 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             <Text style={styles.title} numberOfLines={1}>
               {title}
             </Text>
-            {subtitle && (
-              <Text style={styles.subtitle} numberOfLines={1}>
-                {subtitle}
-              </Text>
-            )}
           </View>
           
           {/* Right Action */}
           <View style={styles.rightActionContainer}>
+            {subtitle && (
+              <View style={styles.subtitleBadge}>
+                <Text style={styles.subtitle} numberOfLines={1}>
+                  {subtitle}
+                </Text>
+              </View>
+            )}
             {rightAction && (
               <TouchableOpacity
                 onPress={rightAction.onPress}
@@ -127,7 +129,7 @@ const styles = StyleSheet.create({
   },
   rightActionContainer: {
     flexDirection: 'row',
-    minWidth: 44,
+    alignItems: 'center',
     justifyContent: 'flex-end',
   },
   titleContainer: {
@@ -141,11 +143,17 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     textAlign: 'center',
   },
+  subtitleBadge: {
+    backgroundColor: colors.primaryLight,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: 12,
+    marginRight: spacing.sm,
+  },
   subtitle: {
-    fontSize: typography.fontSize.sm,
-    color: colors.text.secondary,
-    marginTop: 2,
-    textAlign: 'center',
+    fontSize: typography.fontSize.xs,
+    color: colors.primary,
+    fontWeight: typography.fontWeight.medium,
   },
   actionButton: {
     padding: spacing.sm,

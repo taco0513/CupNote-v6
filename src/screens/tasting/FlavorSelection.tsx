@@ -5,11 +5,11 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { colors, spacing, typography, borderRadius } from '../../styles/theme';
-import { Card, Button, ProgressBar, Badge, Chip, Input } from '../../components/common';
+import { Card, Button, ProgressBar, Badge, Chip, Input, HeaderBar } from '../../components/common';
 import useStore from '../../store/useStore';
 import type { TastingFlowNavigationProp, TastingFlowRouteProp } from '../../types/navigation';
 import draftManager from '../../utils/draftManager';
@@ -154,8 +154,15 @@ interface FlavorChoice {
 export const FlavorSelection: React.FC = () => {
   const navigation = useNavigation<TastingFlowNavigationProp>();
   const route = useRoute<TastingFlowRouteProp<'FlavorSelection'>>();
-  const { mode } = route.params;
+  // Safe params with fallback
+  const params = route.params || { mode: 'cafe' as const };
+  const { mode } = params;
   const { setTastingFlowData } = useStore();
+  
+  // 현재 스크린 저장
+  useEffect(() => {
+    setTastingFlowData({ currentScreen: 'FlavorSelection' });
+  }, []);
 
   const [selectedFlavors, setSelectedFlavors] = useState<FlavorChoice[]>([]);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
@@ -314,30 +321,26 @@ export const FlavorSelection: React.FC = () => {
   }, [selectedFlavors, mode]);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <ProgressBar 
-          progress={mode === 'cafe' ? 0.43 : 0.5} 
-          style={styles.progressBar} 
-        />
-        <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>향미 선택</Text>
-          <Badge 
-            text={mode === 'cafe' ? '☕ 카페 모드' : '🏠 홈카페 모드'}
-            variant={mode === 'cafe' ? 'primary' : 'info'}
-          />
-        </View>
-      </View>
-
+    <SafeAreaView style={styles.container} edges={['bottom']}>
+      <HeaderBar
+        title="향미 선택"
+        subtitle={mode === 'cafe' ? '☕ 카페 모드' : '🏠 홈카페 모드'}
+        onBack={() => navigation.goBack()}
+        progress={mode === 'cafe' ? 0.43 : 0.5}
+        showProgress={true}
+      />
+      
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
-          <Text style={styles.title}>☕ 느껴지는 향미를 선택해주세요</Text>
-          <Text style={styles.subtitle}>
-            제한 없음 • 선택: {selectedCount}개
-          </Text>
+          {/* Main Content */}
+          <View style={styles.mainContent}>
+            <Text style={styles.title}>☕ 느껴지는 향미를 선택해주세요</Text>
+            <Text style={styles.subtitle}>
+              제한 없음 • 선택: {selectedCount}개
+            </Text>
 
-          {/* 선택된 향미 프리뷰 - 상단 이동 */}
-          <Card style={styles.selectedPreview}>
+            {/* 선택된 향미 프리뷰 - 상단 이동 */}
+            <Card style={styles.selectedPreview}>
             <Text style={styles.selectedPreviewTitle}>선택된 향미 ({selectedCount}개)</Text>
             {selectedCount > 0 ? (
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -444,7 +447,8 @@ export const FlavorSelection: React.FC = () => {
                   )}
                 </View>
               ))}
-          </Card>
+            </Card>
+          </View>
         </View>
       </ScrollView>
 
@@ -468,37 +472,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  header: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.lg,
-  },
-  progressBar: {
-    marginBottom: spacing.lg,
-  },
-  headerContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  backButton: {
-    fontSize: typography.fontSize.md,
-    color: colors.primary,
-  },
-  headerTitle: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.semibold as any,
-    color: colors.text.primary,
-  },
-  stepIndicator: {
-    fontSize: typography.fontSize.sm,
-    color: colors.gray[500],
-  },
   scrollView: {
     flex: 1,
   },
   content: {
-    padding: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xxl,
+  },
+  mainContent: {
+    paddingHorizontal: spacing.lg,
   },
   title: {
     fontSize: typography.fontSize.xl,

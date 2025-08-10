@@ -42,11 +42,29 @@ The core feature is a comprehensive coffee tasting workflow with two modes:
 
 ## Recent Major Fixes & Improvements
 
+### Latest Updates (2025-08-10):
+
+#### HeaderBar Component Enhancement
+- **Mode Indicator Repositioned**: Moved subtitle (mode indicator) from center to right side as a badge
+- **Visual Improvements**: Mode indicator now displays with primaryLight background and primary text color
+- **Consistent Navigation**: All TastingFlow screens now have HeaderBar with back button and progress indicator
+
+#### PersonalNotes Auto-Summary Feature
+- **Smart Summary Generation**: Automatically generates summary text from previous selections (flavors, sensory expressions, ratings)
+- **Editable Content**: Users can modify or add to the auto-generated summary
+- **Context-Aware**: Creates natural sentences based on user's coffee tasting journey
+- **UI Cleanup**: Removed unnecessary sections (quick expressions, emotion tags, time display)
+
+#### SafeAreaView Optimization
+- **Modal Screens**: Removed top SafeArea padding from all TastingFlow screens (edges=['bottom'] only)
+- **Consistent Layout**: All modal screens now have consistent header positioning without extra top padding
+
 ### Component Issues Fixed:
 1. **Badge Component Props**: Fixed prop mismatches (`label` → `text`, `color` → `variant`)
 2. **Slider Component**: Complete rewrite to fix NaN values, drag functionality, and coordinate calculation
 3. **Navigation**: Added missing back buttons and proper header navigation
 4. **Color Accessibility**: Updated all gray[400] and text.tertiary colors to meet WCAG 4.5:1 contrast requirements
+5. **Route Params Safety**: Added fallback values for undefined route.params preventing navigation crashes
 
 ### Technical Details:
 - **React Native**: 0.75.4 with TypeScript
