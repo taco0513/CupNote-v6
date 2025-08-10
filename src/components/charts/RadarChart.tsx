@@ -17,7 +17,7 @@ import Svg, {
   RadialGradient,
   Stop,
 } from 'react-native-svg';
-import { theme } from '../../theme';
+import { colors, typography } from '../../styles/theme';
 
 export interface RadarChartData {
   [key: string]: number;
@@ -107,11 +107,11 @@ export const RadarChart: React.FC<RadarChartProps> = ({
   size,
   maxValue,
   strokeWidth = 2,
-  gridColor = theme.colors.warm[200],
-  dataColor = theme.colors.coffee[500],
+  gridColor = colors.gray[200],
+  dataColor = colors.primary,
   dataOpacity = 0.3,
   idealData,
-  idealColor = theme.colors.status.success.default,
+  idealColor = colors.success,
   animated = true,
   animationDelay = 0,
   animationDuration = 1200,
@@ -242,8 +242,8 @@ export const RadarChart: React.FC<RadarChartProps> = ({
           textAnchor={getTextAnchor()}
           fontSize="14"
           fontWeight="600"
-          fill={theme.colors.text.primary}
-          fontFamily={theme.typography.fontFamily.medium}
+          fill={colors.text.primary}
+          fontFamily={typography.fontFamily.medium}
         >
           {labelText}
         </SvgText>
@@ -255,8 +255,8 @@ export const RadarChart: React.FC<RadarChartProps> = ({
             y={labelPos.y + 12}
             textAnchor={getTextAnchor()}
             fontSize="12"
-            fill={theme.colors.text.secondary}
-            fontFamily={theme.typography.fontFamily.regular}
+            fill={colors.text.secondary}
+            fontFamily={typography.fontFamily.regular}
           >
             {value.toFixed(1)}
           </SvgText>
@@ -278,14 +278,14 @@ export const RadarChart: React.FC<RadarChartProps> = ({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: theme.spacing[4],
-    paddingHorizontal: theme.spacing[4],
+    marginTop: 16[4],
+    paddingHorizontal: 16[4],
   });
 
   const getLegendItemStyle = (): ViewStyle => ({
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: theme.spacing[3],
+    marginHorizontal: 16[3],
   });
 
   const getLegendIndicatorStyle = (color: string): ViewStyle => ({
@@ -293,13 +293,13 @@ export const RadarChart: React.FC<RadarChartProps> = ({
     height: 12,
     borderRadius: 6,
     backgroundColor: color,
-    marginRight: theme.spacing[2],
+    marginRight: 16[2],
   });
 
   const getLegendTextStyle = (): TextStyle => ({
-    fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.text.secondary,
-    fontFamily: theme.typography.fontFamily.regular,
+    fontSize: typography.fontSize.xs,
+    color: colors.text.secondary,
+    fontFamily: typography.fontFamily.regular,
   });
 
   // 접근성 설정
@@ -370,7 +370,7 @@ export const RadarChart: React.FC<RadarChartProps> = ({
               cy={point.y}
               r="5"
               fill={dataColor}
-              stroke={theme.colors.surface}
+              stroke={colors.white}
               strokeWidth="2"
             />
           ))}
@@ -383,7 +383,7 @@ export const RadarChart: React.FC<RadarChartProps> = ({
               cy={point.y}
               r="3"
               fill={idealColor}
-              stroke={theme.colors.surface}
+              stroke={colors.white}
               strokeWidth="1"
             />
           ))}

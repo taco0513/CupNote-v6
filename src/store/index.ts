@@ -3,6 +3,17 @@ export { useAuthStore } from './authStore';
 export { useRecordStore } from './recordStore';
 export { useAchievementStore } from './achievementStore';
 
+// Export store types for other teams
+export type { 
+  RecordState, 
+  AuthState, 
+  AchievementState,
+  RecordFilter,
+  RecordSort,
+  RecordListItem,
+  RecordDraft
+} from '../types';
+
 // Store initialization function
 export const initializeStores = async () => {
   try {
@@ -54,16 +65,21 @@ export const resetStores = () => {
   recordStore.setState({
     records: [],
     currentRecord: null,
-    mode: null,
+    totalRecords: 0,
+    currentPage: 1,
+    pageSize: 20,
+    hasMore: true,
+    isLoadingRecords: false,
+    isLoadingMore: false,
+    searchQuery: '',
+    activeFilters: {},
+    sortBy: 'created_at',
+    sortOrder: 'desc',
+    filterMode: 'all',
     draftsList: [],
+    currentDraft: null,
     isLoading: false,
     isSaving: false,
-    isLoadingRecords: false,
-    currentPage: 1,
-    hasMore: true,
-    totalRecords: 0,
-    filterMode: 'all',
-    searchQuery: '',
     error: null,
     lastSyncAt: null,
   });

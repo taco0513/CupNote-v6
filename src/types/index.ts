@@ -320,5 +320,130 @@ export interface PaginatedResponse<T> extends ApiResponse<T[]> {
   };
 }
 
+// Home Screen Types (referenced in Home.tsx but missing)
+export interface HomeStats {
+  totalRecords: number;
+  monthlyRecords: number;
+  averageRating: number;
+  uniqueOrigins: number;
+}
+
+export interface DashboardCard {
+  title: string;
+  value: string | number;
+  subtitle?: string;
+  icon?: string;
+}
+
+export interface RecentActivity {
+  id: string;
+  type: 'record' | 'achievement';
+  title: string;
+  timestamp: Date;
+  icon?: string;
+}
+
+// Records Screen Types (referenced in RecordsScreen.tsx)
+export interface RecordFilter {
+  mode?: RecordMode | 'all';
+  dateRange?: {
+    startDate: Date;
+    endDate: Date;
+  };
+  rating?: {
+    min: number;
+    max: number;
+  };
+  roastery?: string;
+  origin?: string;
+  tags?: string[];
+}
+
+export interface RecordSort {
+  field: 'created_at' | 'updated_at' | 'rating' | 'name';
+  order: 'asc' | 'desc';
+}
+
+export interface RecordListItem {
+  id: string;
+  name: string;
+  roastery?: string;
+  rating: number;
+  mode: RecordMode;
+  recordedAt: Date;
+  thumbnail?: string;
+  tags: string[];
+}
+
+// Store State Types
+export interface RecordState {
+  // Records data
+  records: TastingRecord[];
+  currentRecord: TastingRecord | null;
+  totalRecords: number;
+  
+  // Pagination & Loading
+  currentPage: number;
+  pageSize: number;
+  hasMore: boolean;
+  isLoadingRecords: boolean;
+  isLoadingMore: boolean;
+  
+  // Search & Filter
+  searchQuery: string;
+  activeFilters: RecordFilter;
+  sortBy: RecordSort['field'];
+  sortOrder: RecordSort['order'];
+  filterMode: 'all' | RecordMode;
+  
+  // Drafts
+  draftsList: RecordDraft[];
+  currentDraft: RecordDraft | null;
+  
+  // UI State
+  isLoading: boolean;
+  isSaving: boolean;
+  error: string | null;
+  lastSyncAt: Date | null;
+}
+
+export interface AuthState {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  isInitialized: boolean;
+  error: string | null;
+}
+
+export interface AchievementState {
+  allAchievements: Achievement[];
+  userAchievements: Achievement[];
+  achievementProgress: Record<string, any>;
+  stats: UserStats | null;
+  isLoading: boolean;
+  isLoadingStats: boolean;
+  error: string | null;
+  lastSyncAt: Date | null;
+  recentUnlocks: Achievement[];
+  newUnlocksCount: number;
+}
+
+// Draft Types
+export interface RecordDraft {
+  id: string;
+  mode: RecordMode;
+  currentStep: string;
+  data: any;
+  createdAt: Date;
+  updatedAt: Date;
+  expiresAt: Date;
+}
+
+// Screen Props Types
+export interface ScreenProps {
+  navigation: any;
+  route?: any;
+}
+
 // Re-export TastingFlow types
 export * from './tastingFlow';

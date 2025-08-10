@@ -1,8 +1,16 @@
 /**
- * Home Screen with Polished UI
+ * Home Screen - Main Dashboard
+ * 
+ * Features:
+ * - Welcome header with user info
+ * - Quick stats dashboard
+ * - Recent activity feed
+ * - Quick action buttons
+ * - Achievement highlights
+ * - Draft continuation support
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -11,42 +19,158 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  RefreshControl,
+  Dimensions,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { Button, Card, Badge, Avatar } from '../components/common';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { colors, typography, spacing, borderRadius, shadows } from '../styles/theme';
 import useStore from '../store/useStore';
+import { useAchievementStore } from '../store/achievementStore';
+import { AchievementBadge, AchievementNotification } from '../components/achievements';
+import type { HomeStats, DashboardCard } from '../types';
 import draftManager, { DraftMetadata } from '../utils/draftManager';
+
+const { width } = Dimensions.get('window');
+const CARD_WIDTH = (width - spacing.lg * 3) / 2;
 
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
-  const { user, stats, records, setTastingFlowData } = useStore();
-  const [draftMetadata, setDraftMetadata] = useState<DraftMetadata | null>(null);
   
+  // Store
+  const { 
+    user, 
+    isAuthenticated, 
+    records, 
+    stats,
+  } = useStore();
+  
+  const { 
+    stats: achievementStats, 
+    userAchievements, 
+    recentUnlocks,
+    newUnlocksCount,
+    isLoading: achievementsLoading,
+    error: achievementsError,
+    initializeAchievements,
+    updateStatsAfterRecord,
+    markAchievementAsSeen,
+    getTotalPoints,
+    getCompletionPercentage,
+  } = useAchievementStore();
+  
+  // Local state
+  const [draftMetadata, setDraftMetadata] = useState<DraftMetadata | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [homeStats, setHomeStats] = useState<HomeStats | null>(null);
+  const [showAchievementNotification, setShowAchievementNotification] = useState(false);
+  const [currentNotificationIndex, setCurrentNotificationIndex] = useState(0);
+  
+  // Get recent records (last 3)
   const recentRecords = records.slice(0, 3);
   
-  // Check for draft on mount
-  useEffect(() => {
-    checkForDraft();
-  }, []);
+  // Data loading
+  const loadData = useCallback(async () => {
+    try {
+      // Initialize achievements if not already loaded
+      if (!achievementStats) {
+        initializeAchievements();
+      }
+      
+      // Update achievement stats based on current records
+      await updateStatsAfterRecord();
+    } catch (error) {
+      console.error('Failed to load home data:', error);
+    }
+  }, [achievementStats, initializeAchievements, updateStatsAfterRecord]);
   
-  const checkForDraft = async () => {
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
+  }, [loadData]);
+  
+  // Calculate home stats from record store
+  const calculateHomeStats = useCallback(() => {
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    
+    const monthlyRecords = records.filter(record => {
+      const recordDate = new Date(record.createdAt);
+      return recordDate.getMonth() === currentMonth && recordDate.getFullYear() === currentYear;
+    }).length;
+    
+    const totalRating = records.reduce((sum, record) => sum + record.overallRating, 0);
+    const averageRating = records.length > 0 ? totalRating / records.length : 0;
+    
+    const uniqueOrigins = new Set(records.map(record => record.origin).filter(Boolean)).size;
+    
+    const homeStats: HomeStats = {
+      totalRecords: records.length,
+      monthlyRecords,
+      averageRating,
+      uniqueOrigins,
+    };
+    setHomeStats(homeStats);
+  }, [records]);
+  
+  // Check for draft on mount and focus
+  const checkForDraft = useCallback(async () => {
     const metadata = await draftManager.getMetadata();
     if (metadata.exists) {
       setDraftMetadata(metadata);
+    }
+  }, []);
+  
+  // Effects
+  useEffect(() => {
+    checkForDraft();
+  }, [checkForDraft]);
+  
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+      checkForDraft();
+    }, [loadData, checkForDraft])
+  );
+  
+  useEffect(() => {
+    calculateHomeStats();
+  }, [calculateHomeStats]);
+  
+  // Handle achievement notifications
+  useEffect(() => {
+    if (recentUnlocks.length > 0 && currentNotificationIndex < recentUnlocks.length) {
+      setShowAchievementNotification(true);
+    }
+  }, [recentUnlocks, currentNotificationIndex]);
+  
+  const handleNotificationDismiss = () => {
+    const currentAchievement = recentUnlocks[currentNotificationIndex];
+    if (currentAchievement) {
+      markAchievementAsSeen(currentAchievement.id);
+    }
+
+    setShowAchievementNotification(false);
+    
+    const nextIndex = currentNotificationIndex + 1;
+    if (nextIndex < recentUnlocks.length) {
+      setTimeout(() => {
+        setCurrentNotificationIndex(nextIndex);
+        setShowAchievementNotification(true);
+      }, 500);
     }
   };
   
   const handleContinueDraft = async () => {
     if (!draftMetadata) return;
     
-    const currentStep = await draftManager.loadDraftToStore(setTastingFlowData);
-    if (currentStep) {
-      // Navigate to the saved step
+    try {
+      // Load draft data directly to TastingFlow
       navigation.navigate('TastingFlow', { 
-        screen: currentStep,
-        params: { mode: 'cafe' } // This will be overridden by draft data
+        draftId: draftMetadata.id || 'current'
       });
+    } catch (error) {
+      Alert.alert('오류', '임시 저장된 기록을 불러올 수 없습니다.');
     }
   };
   
@@ -68,6 +192,51 @@ export default function HomeScreen() {
     );
   };
   
+  // Navigation handlers
+  const handleStartNewRecord = () => {
+    navigation.navigate('TastingFlow');
+  };
+  
+  const handleViewRecords = () => {
+    navigation.navigate('Records');
+  };
+  
+  const handleViewAchievements = () => {
+    navigation.navigate('Achievements');
+  };
+  
+  const handleViewProfile = () => {
+    navigation.navigate('Profile');
+  };
+  
+  // Dashboard cards data
+  const dashboardCards: DashboardCard[] = homeStats ? [
+    {
+      title: '이번 달 기록',
+      value: homeStats.monthlyRecords,
+      subtitle: '개',
+      icon: '📅',
+    },
+    {
+      title: '총 기록',
+      value: homeStats.totalRecords,
+      subtitle: '개',
+      icon: '☕',
+    },
+    {
+      title: '달성한 성취',
+      value: userAchievements.length,
+      subtitle: '개',
+      icon: '🏆',
+    },
+    {
+      title: '레벨',
+      value: achievementStats?.level || 1,
+      subtitle: '레벨',
+      icon: '⭐',
+    },
+  ] : [];
+  
   // Get best coffee of current month
   const bestCoffeeThisMonth = React.useMemo(() => {
     const currentMonth = new Date().getMonth();
@@ -82,18 +251,56 @@ export default function HomeScreen() {
     
     // Sort by rating (highest first), then by date (most recent first)
     return thisMonthRecords.sort((a, b) => {
-      if (b.overallRating !== a.overallRating) {
-        return b.overallRating - a.overallRating;
+      if (b.rating !== a.rating) {
+        return b.rating - a.rating;
       }
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     })[0];
   }, [records]);
+  
+  // Error state
+  if (achievementsError) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ScrollView 
+          contentInsetAdjustmentBehavior="automatic"
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorTitle}>데이터를 불러올 수 없습니다</Text>
+            <Text style={styles.errorMessage}>
+              {achievementsError}
+            </Text>
+            <TouchableOpacity style={styles.retryButton} onPress={loadData}>
+              <Text style={styles.retryButtonText}>다시 시도</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+  
+  // Loading state
+  if (achievementsLoading && !homeStats) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>데이터를 불러오는 중...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
   
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView 
         contentInsetAdjustmentBehavior="automatic"
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
         {/* Header */}
         <View style={styles.header}>
@@ -102,34 +309,32 @@ export default function HomeScreen() {
               <Text style={styles.greeting}>안녕하세요! ☀️</Text>
               <Text style={styles.title}>오늘의 커피 어떠셨나요?</Text>
             </View>
-            <Avatar
-              name={user?.username || 'User'}
-              size="medium"
-            />
+            <TouchableOpacity onPress={handleViewProfile}>
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>
+                  {user?.username?.charAt(0) || 'U'}
+                </Text>
+              </View>
+            </TouchableOpacity>
           </View>
         </View>
         
         {/* Quick Stats */}
         <View style={styles.statsContainer}>
-          <Card variant="elevated" style={styles.statCard}>
-            <Text style={styles.statValue}>{stats.totalRecords}</Text>
-            <Text style={styles.statLabel}>총 기록</Text>
-          </Card>
-          <Card variant="elevated" style={styles.statCard}>
-            <Text style={styles.statValue}>{stats.totalAchievements}</Text>
-            <Text style={styles.statLabel}>업적</Text>
-          </Card>
-          <Card variant="elevated" style={styles.statCard}>
-            <Text style={styles.statValue}>
-              {stats.averageRating ? stats.averageRating.toFixed(1) : '0'}
-            </Text>
-            <Text style={styles.statLabel}>평균 평점</Text>
-          </Card>
+          {dashboardCards.map((card, index) => (
+            <View key={index} style={styles.statCard}>
+              <Text style={styles.statIcon}>{card.icon}</Text>
+              <Text style={styles.statValue}>
+                {card.value}{card.subtitle}
+              </Text>
+              <Text style={styles.statLabel}>{card.title}</Text>
+            </View>
+          ))}
         </View>
         
         {/* Draft Continue Card */}
         {draftMetadata && draftMetadata.exists && (
-          <Card variant="elevated" style={[styles.ctaCard, styles.draftCard]}>
+          <View style={[styles.ctaCard, styles.draftCard]}>
             <View style={styles.draftHeader}>
               <Text style={styles.draftEmoji}>📝</Text>
               <TouchableOpacity onPress={handleDeleteDraft} style={styles.draftDeleteButton}>
@@ -149,39 +354,28 @@ export default function HomeScreen() {
               })}에 저장됨
             </Text>
             <View style={styles.draftButtons}>
-              <Button
-                title="이어하기"
-                onPress={handleContinueDraft}
-                size="medium"
-                style={styles.continueButton}
-              />
-              <Button
-                title="새로 시작"
-                onPress={() => navigation.navigate('TastingFlow')}
-                variant="secondary"
-                size="medium"
-                style={styles.newButton}
-              />
+              <TouchableOpacity style={styles.continueButton} onPress={handleContinueDraft}>
+                <Text style={styles.continueButtonText}>이어하기</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.newButton} onPress={handleStartNewRecord}>
+                <Text style={styles.newButtonText}>새로 시작</Text>
+              </TouchableOpacity>
             </View>
-          </Card>
+          </View>
         )}
 
         {/* Main CTA */}
         {!draftMetadata?.exists && (
-          <Card variant="elevated" style={styles.ctaCard}>
+          <View style={styles.ctaCard}>
             <Text style={styles.ctaEmoji}>☕</Text>
             <Text style={styles.ctaTitle}>오늘의 커피를 기록해보세요</Text>
             <Text style={styles.ctaSubtitle}>
               당신만의 특별한 커피 이야기를 남겨보세요
             </Text>
-            <Button
-              title="커피 기록하기"
-              onPress={() => navigation.navigate('TastingFlow')}
-              size="large"
-              icon="☕"
-              style={styles.ctaButton}
-            />
-          </Card>
+            <TouchableOpacity style={styles.ctaButton} onPress={handleStartNewRecord}>
+              <Text style={styles.ctaButtonText}>☕ 커피 기록하기</Text>
+            </TouchableOpacity>
+          </View>
         )}
         
         {/* Best Coffee This Month */}
@@ -191,76 +385,115 @@ export default function HomeScreen() {
           </View>
           {bestCoffeeThisMonth ? (
             <TouchableOpacity 
-              onPress={() => console.log('Best coffee pressed:', bestCoffeeThisMonth.coffeeName)}
+              onPress={() => handleViewRecords()}
               activeOpacity={0.7}
             >
-              <Card style={styles.bestCoffeeCard}>
+              <View style={styles.bestCoffeeCard}>
                 <View style={styles.bestCoffeeHeader}>
                 <View style={styles.bestCoffeeImagePlaceholder}>
                   <Text style={styles.bestCoffeeImageEmoji}>☕</Text>
                 </View>
                 <View style={styles.bestCoffeeInfo}>
-                  <Text style={styles.bestCoffeeTitle}>{bestCoffeeThisMonth.coffeeName}</Text>
+                  <Text style={styles.bestCoffeeTitle}>{bestCoffeeThisMonth.coffee.name}</Text>
                   <Text style={styles.bestCoffeeSubtitle}>
-                    {bestCoffeeThisMonth.cafeName || bestCoffeeThisMonth.roastery || '로스터리'}
+                    {bestCoffeeThisMonth.cafe?.name || bestCoffeeThisMonth.coffee.roastery || '로스터리'}
                   </Text>
                 </View>
               </View>
               <View style={styles.bestCoffeeFooter}>
-                <Text style={styles.bestCoffeeRating}>⭐ {bestCoffeeThisMonth.overallRating.toFixed(1)}</Text>
+                <Text style={styles.bestCoffeeRating}>⭐ {bestCoffeeThisMonth.rating.toFixed(1)}</Text>
                 <Text style={styles.bestCoffeeDate}>
                   {new Date(bestCoffeeThisMonth.createdAt).toLocaleDateString('ko-KR')}
                 </Text>
               </View>
-            </Card>
+            </View>
             </TouchableOpacity>
           ) : (
-            <Card style={styles.bestCoffeeEmptyCard}>
+            <View style={styles.bestCoffeeEmptyCard}>
               <Text style={styles.bestCoffeeEmptyIcon}>🏆</Text>
               <Text style={styles.bestCoffeeEmptyTitle}>이번 달 베스트 커피가 없어요</Text>
               <Text style={styles.bestCoffeeEmptySubtitle}>
                 커피를 기록하고 이번 달의{'\n'}최고 평점 커피를 만나보세요!
               </Text>
-            </Card>
+            </View>
           )}
         </View>
+        
+        {/* Recent Achievements */}
+        {userAchievements.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>🏆 최근 성취</Text>
+              <TouchableOpacity onPress={handleViewAchievements}>
+                <Text style={styles.sectionLink}>모두 보기 →</Text>
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.achievementsList}>
+              {userAchievements.slice(0, 3).map((achievement) => (
+                <View key={achievement.id} style={styles.achievementItem}>
+                  <AchievementBadge
+                    achievement={achievement}
+                    progress={{
+                      achievementId: achievement.id,
+                      current: achievement.requirement.target,
+                      target: achievement.requirement.target,
+                      percentage: 100,
+                      isUnlocked: true,
+                      canUnlock: false,
+                      unlockedAt: achievement.unlockedAt,
+                    }}
+                    size="small"
+                  />
+                  <View style={styles.achievementItemInfo}>
+                    <Text style={styles.achievementItemName}>{achievement.name}</Text>
+                    <Text style={styles.achievementItemDesc}>{achievement.description}</Text>
+                    <Text style={styles.achievementItemPoints}>+{achievement.points} 포인트</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
         
         {/* Recent Records */}
         {recentRecords.length > 0 && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>최근 기록</Text>
-              <TouchableOpacity onPress={() => navigation.navigate('MyRecords')}>
+              <TouchableOpacity onPress={handleViewRecords}>
                 <Text style={styles.sectionLink}>모두 보기 →</Text>
               </TouchableOpacity>
             </View>
             
             {recentRecords.map((record) => (
-              <Card key={record.id} style={styles.recordCard}>
-                <View style={styles.recordHeader}>
-                  <Text style={styles.recordTitle}>{record.coffeeName}</Text>
-                  <Badge
-                    text={record.mode === 'cafe' ? '카페' : '홈카페'}
-                    variant={record.mode === 'cafe' ? 'primary' : 'info'}
-                    size="small"
-                  />
+              <TouchableOpacity key={record.id} onPress={() => handleViewRecords()}>
+                <View style={styles.recordCard}>
+                  <View style={styles.recordHeader}>
+                    <Text style={styles.recordTitle}>{record.coffeeName}</Text>
+                    <View style={styles.modeBadge}>
+                      <Text style={styles.modeBadgeText}>
+                        {record.mode === 'cafe' ? '카페' : '홈카페'}
+                      </Text>
+                    </View>
+                  </View>
+                  {record.cafeName && (
+                    <Text style={styles.recordSubtitle}>📍 {record.cafeName}</Text>
+                  )}
+                  <View style={styles.recordFooter}>
+                    <Text style={styles.recordDate}>
+                      {new Date(record.createdAt).toLocaleDateString('ko-KR')}
+                    </Text>
+                    <Text style={styles.recordRating}>⭐ {record.overallRating}</Text>
+                  </View>
                 </View>
-                {record.cafeName && (
-                  <Text style={styles.recordSubtitle}>📍 {record.cafeName}</Text>
-                )}
-                <View style={styles.recordFooter}>
-                  <Text style={styles.recordDate}>
-                    {new Date(record.createdAt).toLocaleDateString('ko-KR')}
-                  </Text>
-                  <Text style={styles.recordRating}>⭐ {record.overallRating}</Text>
-                </View>
-              </Card>
+              </TouchableOpacity>
             ))}
           </View>
         )}
         
         {/* Tips */}
-        <Card style={styles.tipCard}>
+        <View style={styles.tipCard}>
           <Text style={styles.tipIcon}>💡</Text>
           <View style={styles.tipContent}>
             <Text style={styles.tipTitle}>오늘의 팁</Text>
@@ -269,8 +502,18 @@ export default function HomeScreen() {
               코로 숨을 내쉬어보세요. 후각을 통해 더 많은 향을 느낄 수 있어요!
             </Text>
           </View>
-        </Card>
+        </View>
       </ScrollView>
+
+      {/* Achievement Notification */}
+      {recentUnlocks.length > 0 && currentNotificationIndex < recentUnlocks.length && (
+        <AchievementNotification
+          achievement={recentUnlocks[currentNotificationIndex]}
+          visible={showAchievementNotification}
+          onDismiss={handleNotificationDismiss}
+          autoHideDuration={5000}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -279,6 +522,46 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: typography.fontSize.md,
+    color: colors.text.secondary,
+    marginTop: spacing.md,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.xl,
+  },
+  errorTitle: {
+    fontSize: typography.fontSize.lg,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+    marginBottom: spacing.sm,
+    textAlign: 'center',
+  },
+  errorMessage: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.secondary,
+    marginBottom: spacing.xl,
+    textAlign: 'center',
+  },
+  retryButton: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.md,
+  },
+  retryButtonText: {
+    color: colors.white,
+    fontSize: typography.fontSize.md,
+    fontWeight: typography.fontWeight.semibold,
   },
   header: {
     backgroundColor: colors.primary,
@@ -315,6 +598,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.lg,
     marginHorizontal: spacing.xs,
+    backgroundColor: colors.white,
+    borderRadius: borderRadius.md,
+    ...shadows.sm,
+  },
+  statIcon: {
+    fontSize: typography.fontSize.xxl,
+    marginBottom: spacing.xs,
   },
   statValue: {
     fontSize: typography.fontSize.xxl,
@@ -350,7 +640,17 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   ctaButton: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.lg,
+    borderRadius: borderRadius.lg,
     minWidth: 200,
+  },
+  ctaButtonText: {
+    color: colors.white,
+    fontSize: typography.fontSize.md,
+    fontWeight: typography.fontWeight.semibold,
+    textAlign: 'center',
   },
   section: {
     marginBottom: spacing.xl,
@@ -375,6 +675,20 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing.lg,
     marginBottom: spacing.md,
     padding: spacing.lg,
+    backgroundColor: colors.white,
+    borderRadius: borderRadius.md,
+    ...shadows.sm,
+  },
+  modeBadge: {
+    backgroundColor: colors.primaryLight,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.sm,
+  },
+  modeBadgeText: {
+    fontSize: typography.fontSize.xs,
+    color: colors.white,
+    fontWeight: typography.fontWeight.medium,
   },
   recordHeader: {
     flexDirection: 'row',
@@ -437,6 +751,22 @@ const styles = StyleSheet.create({
   bestCoffeeCard: {
     marginHorizontal: spacing.lg,
     padding: spacing.lg,
+    backgroundColor: colors.white,
+    borderRadius: borderRadius.md,
+    ...shadows.sm,
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarText: {
+    color: colors.white,
+    fontSize: typography.fontSize.md,
+    fontWeight: typography.fontWeight.bold,
   },
   bestCoffeeHeader: {
     flexDirection: 'row',
@@ -605,8 +935,63 @@ const styles = StyleSheet.create({
   },
   continueButton: {
     flex: 1,
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.md,
+    marginRight: spacing.sm,
+  },
+  continueButtonText: {
+    color: colors.white,
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.semibold,
+    textAlign: 'center',
   },
   newButton: {
     flex: 1,
+    backgroundColor: colors.gray[200],
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.md,
+  },
+  newButtonText: {
+    color: colors.text.primary,
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.semibold,
+    textAlign: 'center',
+  },
+  // Achievement styles
+  achievementsList: {
+    paddingHorizontal: spacing.lg,
+  },
+  achievementItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.sm,
+    borderRadius: borderRadius.md,
+    ...shadows.sm,
+  },
+  achievementItemInfo: {
+    flex: 1,
+    marginLeft: spacing.md,
+  },
+  achievementItemName: {
+    fontSize: typography.fontSize.md,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.text.primary,
+    marginBottom: spacing.xs,
+  },
+  achievementItemDesc: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.secondary,
+    marginBottom: spacing.xs,
+  },
+  achievementItemPoints: {
+    fontSize: typography.fontSize.xs,
+    color: colors.primary,
+    fontWeight: typography.fontWeight.medium,
   },
 });

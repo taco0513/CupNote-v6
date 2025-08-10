@@ -5,7 +5,7 @@
  * @format
  */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -27,13 +27,26 @@ import AchievementScreen from './src/screens/Achievement';
 import useStore from './src/store/useStore';
 import { colors, spacing, borderRadius, shadows, typography } from './src/styles/theme';
 
+// Auth imports
+import { supabase } from './src/lib/supabase';
+import LoginScreen from './src/screens/auth/LoginScreen';
+import SignupScreen from './src/screens/auth/SignupScreen';
+import ForgotPasswordScreen from './src/screens/auth/ForgotPasswordScreen';
+
 // ========================================
 // Type Definitions
 // ========================================
 
 type RootStackParamList = {
+  Auth: undefined;
   Main: undefined;
   TastingFlow: undefined;
+};
+
+type AuthStackParamList = {
+  Login: undefined;
+  Signup: undefined;
+  ForgotPassword: undefined;
 };
 
 type MainTabParamList = {
@@ -45,6 +58,7 @@ type MainTabParamList = {
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
+const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 // ========================================
@@ -601,7 +615,59 @@ function MainTabs() {
 // Main App Component
 // ========================================
 
+// Auth Stack Navigator
+function AuthNavigator() {
+  return (
+    <AuthStack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <AuthStack.Screen name="Login" component={LoginScreen} />
+      <AuthStack.Screen name="Signup" component={SignupScreen} />
+      <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+    </AuthStack.Navigator>
+  );
+}
+
 export default function App(): React.JSX.Element {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Check if user is logged in
+    checkAuth();
+
+    // Subscribe to auth changes
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
+  }, []);
+
+  const checkAuth = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+    } catch (error) {
+      console.error('Auth check error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    // You can add a splash screen here
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
+        <Text style={{ fontSize: 24, color: colors.primary }}>☕</Text>
+      </View>
+    );
+  }
+
   return (
     <NavigationContainer>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
@@ -610,15 +676,21 @@ export default function App(): React.JSX.Element {
           headerShown: false,
         }}
       >
-        <Stack.Screen name="Main" component={MainTabs} />
-        <Stack.Screen 
-          name="TastingFlow" 
-          component={TastingFlowNavigator}
-          options={{
-            presentation: 'modal',
-            animation: 'slide_from_bottom',
-          }}
-        />
+        {isAuthenticated ? (
+          <>
+            <Stack.Screen name="Main" component={MainTabs} />
+            <Stack.Screen 
+              name="TastingFlow" 
+              component={TastingFlowNavigator}
+              options={{
+                presentation: 'modal',
+                animation: 'slide_from_bottom',
+              }}
+            />
+          </>
+        ) : (
+          <Stack.Screen name="Auth" component={AuthNavigator} />
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   );

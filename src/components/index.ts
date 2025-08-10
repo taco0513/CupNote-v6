@@ -25,6 +25,9 @@ export * from './charts';
 // TastingFlow Components
 export * from './tastingflow';
 
+// Achievement Components
+export * from './achievements';
+
 // Component Categories
 import { FormComponents } from './form';
 import { LayoutComponents } from './layout';

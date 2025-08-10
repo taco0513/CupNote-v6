@@ -22,7 +22,7 @@ import {
 } from './types';
 
 // Foundation Team Store 연동  
-import { useAuthStore } from '../../../worktree-foundation/src/store';
+import { useAuthStore } from '../store';
 
 // Placeholder Screens (실제 스크린은 Screen Team이 구현)
 import {

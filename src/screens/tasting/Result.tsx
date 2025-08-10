@@ -15,9 +15,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors, spacing, typography } from '../../styles/theme';
 import { Card, Button, Badge, Chip, ProgressBar } from '../../components/common';
+import { AchievementBadge, AchievementNotification } from '../../components/achievements';
 import useStore from '../../store/useStore';
+import { useAchievementStore } from '../../store/achievementStore';
 import draftManager from '../../utils/draftManager';
-// Achievement store not yet implemented
 import type { NavigationProp } from '@react-navigation/native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -41,19 +42,28 @@ export const Result: React.FC = () => {
     addRecord
   } = useStore();
   
+  const {
+    updateStatsAfterRecord,
+    stats,
+    recentUnlocks,
+    newUnlocksCount,
+    markAchievementAsSeen,
+    isLoading: achievementsLoading,
+  } = useAchievementStore();
+  
   const coffeeInfo = tastingFlowData.coffeeInfo;
   const selectedFlavors = tastingFlowData.flavors || [];
   const sensoryExpressions = tastingFlowData.sensoryExpressions || [];
   const mouthFeel = tastingFlowData.ratings;
   const personalNotes = tastingFlowData.personalNotes;
   const mode = tastingFlowData.mode || 'cafe';
-  // const { checkNewAchievements, getUserStats } = useAchievementStore();
 
   // 애니메이션 값
   const [fadeAnim] = useState(new Animated.Value(0));
   const [scaleAnim] = useState(new Animated.Value(0.8));
   const [newAchievements, setNewAchievements] = useState<any[]>([]);
-  const [userStats, setUserStats] = useState<any>(null);
+  const [showNotification, setShowNotification] = useState(false);
+  const [currentNotificationIndex, setCurrentNotificationIndex] = useState(0);
 
   // 매치 스코어 계산
   const matchScore = useMemo(() => {
@@ -137,15 +147,42 @@ export const Result: React.FC = () => {
     draftManager.clearDraft();
   }, []);
 
-  // 성취 확인
+  // 성취 확인 및 처리
   const checkAchievements = async () => {
-    // const achievements = await checkNewAchievements();
-    const achievements = [];
-    setNewAchievements(achievements);
+    try {
+      // Update user stats after record and check for achievements
+      const newUnlockedAchievements = await updateStatsAfterRecord();
+      
+      if (newUnlockedAchievements && newUnlockedAchievements.length > 0) {
+        setNewAchievements(newUnlockedAchievements);
+        // Show first notification after a short delay
+        setTimeout(() => {
+          setShowNotification(true);
+          setCurrentNotificationIndex(0);
+        }, 1500); // After result animation completes
+      }
+    } catch (error) {
+      console.error('Failed to check achievements:', error);
+    }
+  };
+
+  // Handle achievement notification cycling
+  const handleNotificationDismiss = () => {
+    const currentAchievement = newAchievements[currentNotificationIndex];
+    if (currentAchievement) {
+      markAchievementAsSeen(currentAchievement.id);
+    }
+
+    setShowNotification(false);
     
-    // const stats = await getUserStats();
-    const stats = null;
-    setUserStats(stats);
+    // Show next notification if available
+    const nextIndex = currentNotificationIndex + 1;
+    if (nextIndex < newAchievements.length) {
+      setTimeout(() => {
+        setCurrentNotificationIndex(nextIndex);
+        setShowNotification(true);
+      }, 500);
+    }
   };
 
   // 결과 저장
@@ -370,40 +407,82 @@ export const Result: React.FC = () => {
           )}
         </View>
 
-        {/* 성장 인사이트 */}
+        {/* 새로운 성취 */}
         {newAchievements.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>🏆 새로운 성취!</Text>
-            {newAchievements.map((achievement, index) => (
-              <View key={index} style={styles.achievementCard}>
-                <Text style={styles.achievementEmoji}>{achievement.emoji}</Text>
-                <View>
-                  <Text style={styles.achievementName}>{achievement.name}</Text>
-                  <Text style={styles.achievementDesc}>{achievement.description}</Text>
+            <View style={styles.achievementsList}>
+              {newAchievements.map((achievement, index) => (
+                <View key={achievement.id || index} style={styles.achievementCard}>
+                  <View style={styles.achievementBadgeContainer}>
+                    <AchievementBadge
+                      achievement={achievement}
+                      progress={{
+                        achievementId: achievement.id,
+                        current: achievement.requirement.target,
+                        target: achievement.requirement.target,
+                        percentage: 100,
+                        isUnlocked: true,
+                        canUnlock: false,
+                        unlockedAt: new Date(),
+                      }}
+                      size="small"
+                    />
+                  </View>
+                  <View style={styles.achievementInfo}>
+                    <Text style={styles.achievementName}>{achievement.name}</Text>
+                    <Text style={styles.achievementDesc}>{achievement.description}</Text>
+                    <Text style={styles.achievementPoints}>+{achievement.points} 포인트</Text>
+                  </View>
                 </View>
-              </View>
-            ))}
+              ))}
+            </View>
           </View>
         )}
 
         {/* 통계 */}
-        {userStats && (
+        {stats && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>📊 나의 커피 여정</Text>
             <View style={styles.statsGrid}>
               <View style={styles.statItem}>
-                <Text style={styles.statValue}>{userStats.totalRecords || 0}</Text>
+                <Text style={styles.statValue}>{stats.totalRecords || 0}</Text>
                 <Text style={styles.statLabel}>총 기록</Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={styles.statValue}>{userStats.currentStreak || 0}</Text>
+                <Text style={styles.statValue}>{stats.currentStreak || 0}</Text>
                 <Text style={styles.statLabel}>연속 기록</Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={styles.statValue}>{userStats.uniqueCoffees || 0}</Text>
+                <Text style={styles.statValue}>{stats.uniqueCoffees || 0}</Text>
                 <Text style={styles.statLabel}>다양한 커피</Text>
               </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>{stats.level || 1}</Text>
+                <Text style={styles.statLabel}>레벨</Text>
+              </View>
             </View>
+            
+            {stats.totalPoints > 0 && (
+              <View style={styles.pointsContainer}>
+                <Text style={styles.pointsText}>
+                  총 {stats.totalPoints} 포인트 ({stats.experience}/{stats.nextLevelExp})
+                </Text>
+                <View style={styles.experienceBar}>
+                  <View
+                    style={[
+                      styles.experienceFill,
+                      {
+                        width: `${Math.min(
+                          (stats.experience / stats.nextLevelExp) * 100,
+                          100
+                        )}%`,
+                      },
+                    ]}
+                  />
+                </View>
+              </View>
+            )}
           </View>
         )}
 
@@ -434,6 +513,16 @@ export const Result: React.FC = () => {
           />
         </View>
       </ScrollView>
+
+      {/* Achievement Notification */}
+      {newAchievements.length > 0 && currentNotificationIndex < newAchievements.length && (
+        <AchievementNotification
+          achievement={newAchievements[currentNotificationIndex]}
+          visible={showNotification}
+          onDismiss={handleNotificationDismiss}
+          autoHideDuration={5000}
+        />
+      )}
     </SafeAreaView>
   );
 };
@@ -611,26 +700,39 @@ const styles = StyleSheet.create({
   emotionTag: {
     fontSize: 24,
   },
+  achievementsList: {
+    gap: spacing.sm,
+  },
   achievementCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.warningLight,
-    borderRadius: 8,
+    backgroundColor: colors.successLight,
+    borderRadius: 12,
     padding: spacing.md,
-    marginBottom: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.success,
   },
-  achievementEmoji: {
-    fontSize: 32,
+  achievementBadgeContainer: {
     marginRight: spacing.md,
+  },
+  achievementInfo: {
+    flex: 1,
   },
   achievementName: {
     fontSize: typography.fontSize.md,
     fontWeight: typography.fontWeight.semibold as any,
     color: colors.text.primary,
+    marginBottom: spacing.xs,
   },
   achievementDesc: {
     fontSize: typography.fontSize.sm,
     color: colors.gray[600],
+    marginBottom: spacing.xs,
+  },
+  achievementPoints: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.semibold as any,
+    color: colors.success,
   },
   statsGrid: {
     flexDirection: 'row',
@@ -651,6 +753,27 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: typography.fontSize.sm,
     color: colors.gray[600],
+  },
+  pointsContainer: {
+    marginTop: spacing.md,
+    alignItems: 'center',
+  },
+  pointsText: {
+    fontSize: typography.fontSize.sm,
+    color: colors.gray[600],
+    marginBottom: spacing.xs,
+  },
+  experienceBar: {
+    width: '100%',
+    height: 4,
+    backgroundColor: colors.gray[200],
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  experienceFill: {
+    height: '100%',
+    backgroundColor: colors.primary,
+    borderRadius: 2,
   },
   actionButtons: {
     paddingHorizontal: spacing.lg,

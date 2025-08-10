@@ -14,7 +14,8 @@ CupNote is designed for coffee lovers who want to systematically record, analyze
 ### Technology Stack
 - **React Native**: 0.75.4 with TypeScript
 - **Navigation**: React Navigation v6 with type-safe routing
-- **State Management**: Zustand for global state
+- **State Management**: Zustand for global state with persist middleware
+- **Backend**: Supabase (PostgreSQL, Auth, Realtime)
 - **Styling**: Custom design system with theme tokens
 - **Development**: Metro bundler with TypeScript strict mode
 
@@ -30,7 +31,9 @@ src/
 ├── store/             # Zustand state management
 ├── styles/            # Theme tokens and design system
 ├── utils/             # Utility functions and helpers
-└── types/             # TypeScript type definitions
+├── types/             # TypeScript type definitions
+├── lib/               # External integrations (Supabase)
+└── config/            # App configuration and environment
 ```
 
 ## 🚀 Getting Started
@@ -127,26 +130,42 @@ Multi-step coffee recording workflow with two optimized paths:
 7. **Personal Notes**: Free-form thoughts and memories
 8. **Result**: Summary and sharing options
 
+### Authentication System
+- **Supabase Auth**: Email/password authentication with secure sessions
+- **Auth Screens**: Login, Signup, and Password Reset flows
+- **Session Management**: Persistent login with secure token refresh
+- **Email Verification**: Optional email confirmation for enhanced security
+
 ### State Management
-- **Zustand Store**: Global application state
+- **Zustand Store**: Global application state with AsyncStorage persistence
 - **Persistent Data**: TastingFlow data preservation across screens
 - **Draft Management**: Auto-save functionality for user inputs
+- **Offline Support**: Local-first architecture with sync capabilities
 
 ### Navigation
 - **Type-Safe Routing**: Full TypeScript support for navigation parameters
+- **Auth Flow**: Conditional navigation based on authentication state
 - **Consistent UX**: Standardized headers and back navigation
 - **Deep Linking**: Support for direct screen access
 
 ## 🔧 Recent Fixes & Improvements
 
-### Critical Bug Fixes ✅
+### Latest Updates (2025-08-10) ✅
+1. **Authentication System**: Complete Supabase authentication integration
+2. **Auth Screens**: Login, Signup, and Password Reset screens implemented
+3. **Environment Configuration**: Hardcoded env config for development stability
+4. **Database Integration**: Connected to Supabase with 8 tables ready
+
+### Previous Fixes ✅
 1. **Badge Component**: Fixed prop interface mismatches causing empty displays
 2. **Slider Component**: Complete rewrite fixing NaN values and drag functionality
 3. **Navigation**: Added missing back buttons for consistent user experience
 4. **Color Accessibility**: Updated all colors to meet WCAG 2.1 AA standards (4.5:1 contrast)
 
 ### Technical Improvements ✅
-- Resolved TypeScript prop interface conflicts
+- Supabase client configuration with proper validation
+- Authentication flow with email verification support
+- TypeScript strict mode compliance across all new code
 - Enhanced component reliability with safe defaults
 - Improved accessibility compliance across all screens
 - Optimized touch interactions and gesture handling

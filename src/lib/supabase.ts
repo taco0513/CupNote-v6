@@ -3,25 +3,25 @@ import 'react-native-get-random-values';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Database, User, TastingRecord, Achievement, UserStats, TastingFlowDraft } from '../types';
+import { supabaseConfig, configUtils } from './supabase-config';
 
-// Configuration - These should be set via environment variables or config
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://your-project.supabase.co';
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'your-anon-key';
+// Create Supabase client with enhanced configuration
+export const supabase: SupabaseClient<Database> = createClient(
+  supabaseConfig.url,
+  supabaseConfig.anonKey,
+  {
+    ...supabaseConfig.clientOptions,
+    auth: {
+      ...supabaseConfig.clientOptions.auth,
+      storage: AsyncStorage,
+    },
+  }
+);
 
-// Validate configuration
-if (supabaseUrl === 'https://your-project.supabase.co' || supabaseAnonKey === 'your-anon-key') {
-  console.warn('⚠️  Supabase is not configured. Please set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY in your .env file.');
+// Validate configuration on startup
+if (!configUtils.validateConfig()) {
+  console.warn('⚠️  Supabase configuration validation failed. Please check your .env.local file.');
 }
-
-// Create Supabase client
-export const supabase: SupabaseClient<Database> = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    storage: AsyncStorage,
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: false,
-  },
-});
 
 // Auth Service
 export class AuthService {
@@ -87,6 +87,15 @@ export class AuthService {
   // Sign out
   static async signOut() {
     const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+  }
+
+  // Reset password via email
+  static async resetPasswordForEmail(email: string) {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'cupnote://reset-password',
+    });
+    
     if (error) throw error;
   }
 

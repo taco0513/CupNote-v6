@@ -16,8 +16,9 @@ import Svg, {
   Defs,
   LinearGradient,
   Stop,
+  G,
 } from 'react-native-svg';
-import { theme } from '../../theme';
+import { colors, typography } from '../../styles/theme';
 
 export interface BarChartDataItem {
   label: string;
@@ -102,8 +103,8 @@ export const BarChart: React.FC<BarChartProps> = ({
   width,
   height,
   maxValue,
-  barColor = theme.colors.coffee[500],
-  gridColor = theme.colors.warm[200],
+  barColor = colors.primary,
+  gridColor = colors.gray[200],
   barWidthRatio = 0.7,
   animated = true,
   animationDelay = 0,
@@ -187,8 +188,8 @@ export const BarChart: React.FC<BarChartProps> = ({
             y={y + 4}
             textAnchor="end"
             fontSize="12"
-            fill={theme.colors.text.tertiary}
-            fontFamily={theme.typography.fontFamily.regular}
+            fill={colors.text.tertiary}
+            fontFamily={typography.fontFamily.regular}
           >
             {value.toFixed(0)}
           </SvgText>
@@ -226,8 +227,8 @@ export const BarChart: React.FC<BarChartProps> = ({
             textAnchor="middle"
             fontSize="12"
             fontWeight="600"
-            fill={theme.colors.text.primary}
-            fontFamily={theme.typography.fontFamily.medium}
+            fill={colors.text.primary}
+            fontFamily={typography.fontFamily.medium}
           >
             {item.value.toFixed(0)}
           </SvgText>
@@ -250,8 +251,8 @@ export const BarChart: React.FC<BarChartProps> = ({
           textAnchor="middle"
           fontSize="12"
           fontWeight="600"
-          fill={theme.colors.text.primary}
-          fontFamily={theme.typography.fontFamily.medium}
+          fill={colors.text.primary}
+          fontFamily={typography.fontFamily.medium}
           transform={xLabelRotation ? `rotate(${xLabelRotation}, ${x}, ${y})` : undefined}
         >
           {item.label}
@@ -264,8 +265,8 @@ export const BarChart: React.FC<BarChartProps> = ({
             y={y + 15}
             textAnchor="middle"
             fontSize="10"
-            fill={theme.colors.text.secondary}
-            fontFamily={theme.typography.fontFamily.regular}
+            fill={colors.text.secondary}
+            fontFamily={typography.fontFamily.regular}
             transform={xLabelRotation ? `rotate(${xLabelRotation}, ${x}, ${y + 15})` : undefined}
           >
             {item.subLabel}
@@ -381,7 +382,7 @@ export const BarChart: React.FC<BarChartProps> = ({
             y1={padding.top + chartHeight}
             x2={padding.left + chartWidth}
             y2={padding.top + chartHeight}
-            stroke={theme.colors.text.tertiary}
+            stroke={colors.text.tertiary}
             strokeWidth={1}
           />
           
@@ -391,7 +392,7 @@ export const BarChart: React.FC<BarChartProps> = ({
             y1={padding.top}
             x2={padding.left}
             y2={padding.top + chartHeight}
-            stroke={theme.colors.text.tertiary}
+            stroke={colors.text.tertiary}
             strokeWidth={1}
           />
           

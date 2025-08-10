@@ -8,11 +8,31 @@
  * ProfileScreen: 프로필 설정
  */
 
-export { default as HomeScreen } from './HomeScreen';
-export { default as RecordsScreen } from './RecordsScreen';
+// Import the new Main Screens implementations
+export { default as HomeScreen } from '../Home';
+export { default as RecordsScreen } from '../Records';
+export { default as AchievementsScreen } from '../Achievements';
+export { default as ProfileScreen } from '../Profile';
+
+// Keep the existing RecordDetailScreen for now
 export { default as RecordDetailScreen } from './RecordDetailScreen';
-export { default as AchievementsScreen } from './AchievementsScreen';
-export { default as ProfileScreen } from './ProfileScreen';
+
+// Placeholder exports for screens referenced in navigation but not yet implemented
+export { default as HomeRecordDetailScreen } from './RecordDetailScreen';
+export { default as CommunityMatchScreen } from './RecordDetailScreen'; // Placeholder
+export { default as StatisticsScreen } from './RecordDetailScreen'; // Placeholder
+export { default as RecordsRecordDetailScreen } from './RecordDetailScreen';
+export { default as EditRecordScreen } from './RecordDetailScreen'; // Placeholder
+export { default as RecordFilterScreen } from './RecordDetailScreen'; // Placeholder
+export { default as RecordSearchScreen } from './RecordDetailScreen'; // Placeholder
+export { default as AchievementDetailScreen } from './RecordDetailScreen'; // Placeholder
+export { default as LeaderBoardScreen } from './RecordDetailScreen'; // Placeholder
+export { default as EditProfileScreen } from './RecordDetailScreen'; // Placeholder
+export { default as SettingsScreen } from './RecordDetailScreen'; // Placeholder
+export { default as AboutScreen } from './RecordDetailScreen'; // Placeholder
+export { default as TermsScreen } from './RecordDetailScreen'; // Placeholder
+export { default as PrivacyScreen } from './RecordDetailScreen'; // Placeholder
+export { default as DataExportScreen } from './RecordDetailScreen'; // Placeholder
 
 // Screen 정보 내보내기
 export const MainScreens = {
