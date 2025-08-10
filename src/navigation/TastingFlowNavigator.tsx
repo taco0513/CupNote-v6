@@ -25,17 +25,15 @@ import {
 // Foundation Team Store 연동  
 import { useAuthStore } from '../../../worktree-foundation/src/store';
 
-// Placeholder Screens (실제 스크린은 Screen Team이 구현)
-import {
-  ModeSelectScreen,
-  CoffeeInfoScreen,
-  BrewSetupScreen,
-  FlavorSelectionScreen,
-  SensoryExpressionScreen,
-  SensoryMouthFeelScreen,
-  PersonalNotesScreen,
-  ResultScreen,
-} from '../screens/tasting-flow/index';
+// Import screens from the new tasting directory
+import { ModeSelectScreen } from '../screens/TastingFlow';
+import CoffeeInfo from '../screens/tasting/CoffeeInfo';
+import BrewSetup from '../screens/tasting/BrewSetup';
+import FlavorSelection from '../screens/tasting/FlavorSelection';
+import SensoryExpression from '../screens/tasting/SensoryExpression';
+import SensoryMouthFeel from '../screens/tasting/SensoryMouthFeel';
+import PersonalNotes from '../screens/tasting/PersonalNotes';
+import Result from '../screens/tasting/Result';
 
 // Navigation Hooks
 import { useTastingFlowNavigation } from './hooks/useNavigation';
@@ -256,7 +254,7 @@ export function TastingFlowNavigator() {
       {/* 커피 정보 화면 (카페 정보 통합) */}
       <Stack.Screen
         name="CoffeeInfo"
-        component={CoffeeInfoScreen}
+        component={CoffeeInfo}
         options={({ route }) => {
           const mode = route.params?.mode;
           const stepInfo = mode ? getStepInfo(mode, 'CoffeeInfo') : null;
@@ -272,7 +270,7 @@ export function TastingFlowNavigator() {
       {/* 브루잉 설정 화면 (HomeCafe 모드 전용) */}
       <Stack.Screen
         name="BrewSetup"
-        component={BrewSetupScreen}
+        component={BrewSetup}
         options={({ route }) => {
           const stepInfo = getStepInfo('homecafe', 'BrewSetup');
           
@@ -287,7 +285,7 @@ export function TastingFlowNavigator() {
       {/* 향미 선택 화면 */}
       <Stack.Screen
         name="FlavorSelection"
-        component={FlavorSelectionScreen}
+        component={FlavorSelection}
         options={({ route }) => {
           const mode = route.params?.mode;
           const stepInfo = mode ? getStepInfo(mode, 'FlavorSelection') : null;
@@ -303,7 +301,7 @@ export function TastingFlowNavigator() {
       {/* 감각 표현 화면 */}
       <Stack.Screen
         name="SensoryExpression"
-        component={SensoryExpressionScreen}
+        component={SensoryExpression}
         options={({ route }) => {
           const mode = route.params?.mode;
           const stepInfo = mode ? getStepInfo(mode, 'SensoryExpression') : null;
@@ -319,7 +317,7 @@ export function TastingFlowNavigator() {
       {/* 수치 평가 화면 (선택적) */}
       <Stack.Screen
         name="SensoryMouthFeel"
-        component={SensoryMouthFeelScreen}
+        component={SensoryMouthFeel}
         options={({ route }) => {
           const mode = route.params?.mode;
           const stepInfo = mode ? getStepInfo(mode, 'SensoryMouthFeel') : null;
@@ -335,7 +333,7 @@ export function TastingFlowNavigator() {
       {/* 개인 노트 화면 */}
       <Stack.Screen
         name="PersonalNotes"
-        component={PersonalNotesScreen}
+        component={PersonalNotes}
         options={({ route }) => {
           const mode = route.params?.mode;
           const stepInfo = mode ? getStepInfo(mode, 'PersonalNotes') : null;
@@ -351,7 +349,7 @@ export function TastingFlowNavigator() {
       {/* 결과 화면 */}
       <Stack.Screen
         name="Result"
-        component={ResultScreen}
+        component={Result}
         options={{
           title: TASTING_FLOW_STEP_NAMES.Result,
           headerShown: true,

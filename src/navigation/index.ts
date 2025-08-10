@@ -147,16 +147,14 @@ export {
 } from '../screens/main/index';
 
 // TastingFlow Screens
-export {
-  ModeSelectScreen,
-  CoffeeInfoScreen,
-  BrewSetupScreen,
-  FlavorSelectionScreen,
-  SensoryExpressionScreen,
-  SensoryMouthFeelScreen,
-  PersonalNotesScreen,
-  ResultScreen,
-} from '../screens/tasting-flow/index';
+export { ModeSelectScreen } from '../screens/TastingFlow';
+export { default as CoffeeInfoScreen } from '../screens/tasting/CoffeeInfo';
+export { default as BrewSetupScreen } from '../screens/tasting/BrewSetup';
+export { default as FlavorSelectionScreen } from '../screens/tasting/FlavorSelection';
+export { default as SensoryExpressionScreen } from '../screens/tasting/SensoryExpression';
+export { default as SensoryMouthFeelScreen } from '../screens/tasting/SensoryMouthFeel';
+export { default as PersonalNotesScreen } from '../screens/tasting/PersonalNotes';
+export { default as ResultScreen } from '../screens/tasting/Result';
 
 // Other Screens
 export { OnboardingScreen } from '../screens/onboarding/index';
